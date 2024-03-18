@@ -1147,19 +1147,13 @@ namespace GameClient
 
         public static Map StringToMap(MapDetailsJSON mapDetailsJSON, bool containsItems, bool containsHumans, bool containsAnimals, bool lessLoot)
         {
-            Map map = SetEmptyMap(mapDetailsJSON);
+            MapGenerationData.mapDetailsJSON = mapDetailsJSON;
+            MapGenerationData.containsItems = containsItems;
+            MapGenerationData.containsHumans = containsHumans;
+            MapGenerationData.containsAnimals = containsAnimals;
+            MapGenerationData.lessLoot = lessLoot;
 
-            SetMapThings(mapDetailsJSON, map, containsItems, lessLoot);
-
-            if (containsHumans) SetMapHumans(mapDetailsJSON, map);
-
-            if (containsAnimals) SetMapAnimals(mapDetailsJSON, map);
-
-            SetMapTerrain(mapDetailsJSON, map);
-
-            SetMapFog(map);
-
-            SetMapRoof(map);
+            Map map = SetMap(mapDetailsJSON, "RT_Player_Settlement");
 
             return map;
         }
@@ -1229,154 +1223,18 @@ namespace GameClient
 
         //Setters
 
-        private static Map SetEmptyMap(MapDetailsJSON mapDetailsJSON)
+        private static Map SetMap(MapDetailsJSON mapDetailsJSON, string mapGeneratorDefName)
         {
             string[] splitSize = mapDetailsJSON.mapSize.Split('|');
 
             IntVec3 mapSize = new IntVec3(int.Parse(splitSize[0]), int.Parse(splitSize[1]),
                 int.Parse(splitSize[2]));
 
-            PlanetManagerHelper.SetOverrideGenerators();
+            PlanetManagerHelper.SetOverrideGenerators(mapGeneratorDefName);
             Map toReturn = GetOrGenerateMapUtility.GetOrGenerateMap(ClientValues.chosenSettlement.Tile, mapSize, null);
             PlanetManagerHelper.SetDefaultGenerators();
             return toReturn;
         }
 
-        private static void SetMapThings(MapDetailsJSON mapDetailsJSON, Map map, bool containsItems, bool lessLoot)
-        {
-            List<Thing> thingsToGetInThisTile = new List<Thing>();
-
-            foreach (ItemDetailsJSON item in mapDetailsJSON.nonFactionThings)
-            {
-                try
-                {
-                    Thing toGet = ThingScribeManager.StringToItem(item);
-                    thingsToGetInThisTile.Add(toGet);
-                }
-                catch { }
-            }
-
-            if (containsItems)
-            {
-                Random rnd = new Random();
-
-                foreach (ItemDetailsJSON item in mapDetailsJSON.factionThings)
-                {
-                    try
-                    {
-                        Thing toGet = ThingScribeManager.StringToItem(item);
-
-                        if (lessLoot)
-                        {
-                            if (rnd.Next(1, 100) > 70) thingsToGetInThisTile.Add(toGet);
-                            else continue;
-                        }
-                        else thingsToGetInThisTile.Add(toGet);
-                    }
-                    catch { }
-                }
-            }
-
-            foreach (Thing thing in thingsToGetInThisTile)
-            {
-                try { GenPlace.TryPlaceThing(thing, thing.Position, map, ThingPlaceMode.Direct, rot: thing.Rotation); }
-                catch { Logs.Warning($"Failed to place thing {thing.def.defName} at {thing.Position}"); }
-            }
-        }
-
-        private static void SetMapHumans(MapDetailsJSON mapDetailsJSON, Map map)
-        {
-            foreach (HumanDetailsJSON pawn in mapDetailsJSON.nonFactionHumans)
-            {
-                try
-                {
-                    Pawn human = HumanScribeManager.StringToHuman(pawn);
-                    GenSpawn.Spawn(human, human.Position, map, human.Rotation);
-                }
-                catch { Logs.Warning($"Failed to spawn human {pawn.name}"); }
-            }
-
-            foreach (HumanDetailsJSON pawn in mapDetailsJSON.factionHumans)
-            {
-                try
-                {
-                    Pawn human = HumanScribeManager.StringToHuman(pawn);
-                    human.SetFaction(FactionValues.neutralPlayer);
-
-                    GenSpawn.Spawn(human, human.Position, map, human.Rotation);
-                }
-                catch { Logs.Warning($"Failed to spawn human {pawn.name}"); }
-            }
-        }
-
-        private static void SetMapAnimals(MapDetailsJSON mapDetailsJSON, Map map)
-        {
-            foreach (AnimalDetailsJSON pawn in mapDetailsJSON.nonFactionAnimals)
-            {
-                try
-                {
-                    Pawn animal = AnimalScribeManager.StringToAnimal(pawn);
-                    GenSpawn.Spawn(animal, animal.Position, map, animal.Rotation);
-                }
-                catch { Logs.Warning($"Failed to spawn animal {pawn.name}"); }
-            }
-
-            foreach (AnimalDetailsJSON pawn in mapDetailsJSON.factionAnimals)
-            {
-                try
-                {
-                    Pawn animal = AnimalScribeManager.StringToAnimal(pawn);
-                    animal.SetFaction(FactionValues.neutralPlayer);
-
-                    GenSpawn.Spawn(animal, animal.Position, map, animal.Rotation);
-                }
-                catch { Logs.Warning($"Failed to spawn animal {pawn.name}"); }
-            }
-        }
-
-        private static void SetMapTerrain(MapDetailsJSON mapDetailsJSON, Map map)
-        {
-            int index = 0;
-
-            for (int z = 0; z < map.Size.z; ++z)
-            {
-                for (int x = 0; x < map.Size.x; ++x)
-                {
-                    IntVec3 vectorToCheck = new IntVec3(x, map.Size.y, z);
-
-                    try
-                    {
-                        TerrainDef terrainToUse = DefDatabase<TerrainDef>.AllDefs.ToList().Find(fetch => fetch.defName ==
-                            mapDetailsJSON.tileDefNames[index]);
-
-                        map.terrainGrid.SetTerrain(vectorToCheck, terrainToUse);
-
-                    }
-                    catch { Logs.Warning($"Failed to set terrain at {vectorToCheck}"); }
-
-                    try
-                    {
-                        RoofDef roofToUse = DefDatabase<RoofDef>.AllDefs.ToList().Find(fetch => fetch.defName ==
-                                    mapDetailsJSON.roofDefNames[index]);
-
-                        map.roofGrid.SetRoof(vectorToCheck, roofToUse);
-                    }
-                    catch { Logs.Warning($"Failed to set roof at {vectorToCheck}"); }
-
-                    index++;
-                }
-            }
-        }
-
-        private static void SetMapFog(Map map)
-        {
-            FloodFillerFog.FloodUnfog(MapGenerator.PlayerStartSpot, map);
-        }
-
-        private static void SetMapRoof(Map map)
-        {
-            map.roofCollapseBuffer.Clear();
-            map.roofGrid.Drawer.SetDirty();
-        }
     }
 }

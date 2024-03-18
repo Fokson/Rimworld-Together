@@ -333,7 +333,8 @@ namespace GameClient
 
         public static void GetMapGenerators()
         {
-            emptyGenerator = DefDatabase<MapGeneratorDef>.AllDefs.First(fetch => fetch.defName == "Empty");
+            //emptyGenerator = DefDatabase<MapGeneratorDef>.AllDefs.First(fetch => fetch.defName == "Empty");
+            emptyGenerator = DefDatabase<MapGeneratorDef>.AllDefs.First(fetch => fetch.defName == "RT_Player_Settlement");
 
             WorldObjectDef settlement = WorldObjectDefOf.Settlement;
             defaultSettlementGenerator = settlement.mapGenerator;
@@ -353,13 +354,17 @@ namespace GameClient
             site.mapGenerator = defaultSiteGenerator;
         }
 
-        public static void SetOverrideGenerators()
+        public static void SetOverrideGenerators(string MapGeneratorDefName)
         {
+            //Get the mapGeneratorDef using its name
+            MapGeneratorDef mapGeneratorDef = DefDatabase<MapGeneratorDef>.AllDefs.First(fetch => fetch.defName == MapGeneratorDefName);
+
+
             WorldObjectDef settlement = WorldObjectDefOf.Settlement;
-            settlement.mapGenerator = emptyGenerator;
+            settlement.mapGenerator = mapGeneratorDef;
 
             WorldObjectDef site = WorldObjectDefOf.Site;
-            site.mapGenerator = emptyGenerator;
+            site.mapGenerator = mapGeneratorDef;
         }
     }
 }

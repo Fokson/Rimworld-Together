@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GameClient.World_Generation;
 using RimWorld;
 using RimWorld.Planet;
 using Shared;
@@ -81,6 +82,7 @@ namespace GameClient
         {
             Rand.PushState(0);
             Current.CreatingWorld = new World();
+            Logs.Message($"Generating a world using the seed : {seedString}");
             Current.CreatingWorld.info.seedString = seedString;
             Current.CreatingWorld.info.persistentRandomValue = persistentRandomValue;
             Current.CreatingWorld.info.planetCoverage = planetCoverage;
@@ -91,7 +93,14 @@ namespace GameClient
             Current.CreatingWorld.info.factions = factions;
             Current.CreatingWorld.info.pollution = pollution;
 
-            WorldGenStepDef[] worldGenSteps = GenStepsInOrder.ToArray();
+            //WorldGenStepDef[] worldGenSteps = GenStepsInOrder.ToArray();
+            //worldGenSteps[0].worldGenStep = new RT_WorldGenStep_Terrain();
+            WorldGenerationData.initializeGenerationDefs();
+            WorldGenStepDef[] worldGenSteps = WorldGenerationData.WorldSyncSteps;
+            Logs.Message($"Steps count : {GenStepsInOrder.Count()}");
+            foreach (WorldGenStepDef step in GenStepsInOrder){
+                Logs.Message($"step : {step.ToString()}");
+            }
             for (int i = 0; i < worldGenSteps.Count(); i++)
             {
                 worldGenSteps[i].worldGenStep.GenerateFresh(seedString);

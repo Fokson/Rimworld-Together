@@ -20,7 +20,7 @@ namespace GameClient
 
                 Vector2 buttonSize = new Vector2(150f, 38f);
                 Vector2 buttonLocation = new Vector2(rect.xMax - buttonSize.x, rect.yMax - buttonSize.y);
-                if (Widgets.ButtonText(new Rect(buttonLocation.x, buttonLocation.y, buttonSize.x, buttonSize.y), ""))
+                if (Widgets.ButtonText(new Rect(buttonLocation.x-20, buttonLocation.y, buttonSize.x, buttonSize.y), "tes"))
                 {
                     __instance.Close();
 

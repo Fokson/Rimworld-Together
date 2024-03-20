@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using Shared;
+using System;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -18,21 +19,33 @@ namespace GameClient
         {
             string filePath = Path.Combine(new string[] { Master.savesFolderPath, SaveManager.customSaveName + ".rws" });
             XmlReader reader = XmlReader.Create(filePath);
+            XmlReader print = XmlReader.Create(filePath);
+            print.Read();
+            try { Log.Message(print.ReadContentAsString()); }
+            catch (Exception e) { Log.Error(e.ToString()); }
 
-            worldDetailsJSON.tileBiomeDeflate = GetDataFromXml(reader, "tileBiomeDeflate");
-            worldDetailsJSON.tileElevationDeflate = GetDataFromXml(reader, "tileElevationDeflate");
-            worldDetailsJSON.tileHillinessDeflate = GetDataFromXml(reader, "tileHillinessDeflate");
-            worldDetailsJSON.tileTemperatureDeflate = GetDataFromXml(reader, "tileTemperatureDeflate");
-            worldDetailsJSON.tileRainfallDeflate = GetDataFromXml(reader, "tileRainfallDeflate");
-            worldDetailsJSON.tileSwampinessDeflate = GetDataFromXml(reader, "tileSwampinessDeflate");
-            worldDetailsJSON.tileFeatureDeflate = GetDataFromXml(reader, "tileFeatureDeflate");
-            worldDetailsJSON.tilePollutionDeflate = GetDataFromXml(reader, "tilePollutionDeflate");
-            worldDetailsJSON.tileRoadOriginsDeflate = GetDataFromXml(reader, "tileRoadOriginsDeflate");
-            worldDetailsJSON.tileRoadAdjacencyDeflate = GetDataFromXml(reader, "tileRoadAdjacencyDeflate");
-            worldDetailsJSON.tileRoadDefDeflate = GetDataFromXml(reader, "tileRoadDefDeflate");
-            worldDetailsJSON.tileRiverOriginsDeflate = GetDataFromXml(reader, "tileRiverOriginsDeflate");
-            worldDetailsJSON.tileRiverAdjacencyDeflate = GetDataFromXml(reader, "tileRiverAdjacencyDeflate");
-            worldDetailsJSON.tileRiverDefDeflate = GetDataFromXml(reader, "tileRiverDefDeflate");
+            XmlDocument doc = new XmlDocument();
+            doc.Load(filePath);
+
+            XmlNode docNode = GetChildNodeInNode(doc, "savegame");
+            XmlNode gameNode = GetChildNodeInNode(docNode, "game");
+            XmlNode worldNode = GetChildNodeInNode(gameNode, "world");
+            XmlNode gridNode = GetChildNodeInNode(worldNode, "grid");
+
+            worldDetailsJSON.tileBiomeDeflate = GetDataFromXml(gridNode, "tileBiomeDeflate");
+            worldDetailsJSON.tileElevationDeflate = GetDataFromXml(gridNode, "tileElevationDeflate");
+            worldDetailsJSON.tileHillinessDeflate = GetDataFromXml(gridNode, "tileHillinessDeflate");
+            worldDetailsJSON.tileTemperatureDeflate = GetDataFromXml(gridNode, "tileTemperatureDeflate");
+            worldDetailsJSON.tileRainfallDeflate = GetDataFromXml(gridNode, "tileRainfallDeflate");
+            worldDetailsJSON.tileSwampinessDeflate = GetDataFromXml(gridNode, "tileSwampinessDeflate");
+            worldDetailsJSON.tileFeatureDeflate = GetDataFromXml(gridNode, "tileFeatureDeflate");
+            worldDetailsJSON.tilePollutionDeflate = GetDataFromXml(gridNode, "tilePollutionDeflate");
+            worldDetailsJSON.tileRoadOriginsDeflate = GetDataFromXml(gridNode, "tileRoadOriginsDeflate");
+            worldDetailsJSON.tileRoadAdjacencyDeflate = GetDataFromXml(gridNode, "tileRoadAdjacencyDeflate");
+            worldDetailsJSON.tileRoadDefDeflate = GetDataFromXml(gridNode, "tileRoadDefDeflate");
+            worldDetailsJSON.tileRiverOriginsDeflate = GetDataFromXml(gridNode, "tileRiverOriginsDeflate");
+            worldDetailsJSON.tileRiverAdjacencyDeflate = GetDataFromXml(gridNode, "tileRiverAdjacencyDeflate");
+            worldDetailsJSON.tileRiverDefDeflate = GetDataFromXml(gridNode, "tileRiverDefDeflate");
 
             reader.Close();
 
@@ -41,21 +54,49 @@ namespace GameClient
 
         //Gets the data from the specified XML element name
 
-        public static string GetDataFromXml(XmlReader reader, string elementName)
+        public static string GetDataFromXml(XmlNode node, string elementName)
         {
             string dataToReturn = "";
 
-            while (reader.Read())
+            try
             {
-                if (reader.NodeType == XmlNodeType.Element && reader.Name == elementName)
+                foreach (XmlNode child in node.ChildNodes)
                 {
-                    dataToReturn = reader.ReadElementContentAsString();
-                    dataToReturn = dataToReturn.Replace("\n", "");
-                    break;
+                    if (child.Name == elementName)
+                    {
+                        Log.Message("In if");
+                        dataToReturn = child.InnerText;
+                        break;
+                    }
                 }
             }
+            catch (Exception e)
+            {
 
+                Log.Message(e.ToString());
+            }
+            Log.Message($"Data : {dataToReturn}");
             return dataToReturn;
+            /* while (reader.Read())
+             {
+                 if (reader.NodeType == XmlNodeType.Element && reader.Name == elementName)
+                 {
+                     Log.Message("In while");
+                     dataToReturn = reader.ReadElementContentAsString();
+                     dataToReturn = dataToReturn.Replace("\n", "");
+                     break;
+                 }
+             }
+             try
+             {
+                 if (dataToReturn.Count() > 120) { Log.Message($"First 100 characters of deflate:\n{dataToReturn.Substring(0, 100)}"); }
+                 else Log.Message($"First X amount : {dataToReturn}");
+             }
+             catch (Exception e)
+             {
+                 Log.Message(e.ToString());
+             }
+             return dataToReturn;*/
         }
 
         //Modifies the existing XML file with the required details from the server
@@ -71,7 +112,7 @@ namespace GameClient
             XmlNode gameNode = GetChildNodeInNode(docNode, "game");
             XmlNode worldNode = GetChildNodeInNode(gameNode, "world");
             XmlNode gridNode = GetChildNodeInNode(worldNode, "grid");
-
+            Log.Message(doc.ToString());
             SetDataIntoXML(gridNode, "tileBiomeDeflate", worldDetailsJSON.tileBiomeDeflate);
             SetDataIntoXML(gridNode, "tileElevationDeflate", worldDetailsJSON.tileElevationDeflate);
             SetDataIntoXML(gridNode, "tileHillinessDeflate", worldDetailsJSON.tileHillinessDeflate);
@@ -85,22 +126,67 @@ namespace GameClient
             SetDataIntoXML(gridNode, "tileRoadDefDeflate", worldDetailsJSON.tileRoadDefDeflate);
             SetDataIntoXML(gridNode, "tileRiverOriginsDeflate", worldDetailsJSON.tileRiverOriginsDeflate);
             SetDataIntoXML(gridNode, "tileRiverAdjacencyDeflate", worldDetailsJSON.tileRiverAdjacencyDeflate);
+            Log.Message(worldDetailsJSON.tileRiverDefDeflate);
+
+            Log.Message($"Replaced : {worldDetailsJSON.tileRiverDefDeflate}");
             SetDataIntoXML(gridNode, "tileRiverDefDeflate", worldDetailsJSON.tileRiverDefDeflate);
+            string deflate = "";
+            foreach (XmlNode child in gridNode.ChildNodes)
+            {
+                Log.Message($"{child.Name.ToString()}");
+                if (child.Name == "tileRiverDefDeflate")
+                {
+                    deflate = child.InnerText;
+                    break;
+                }
+            }
+
+            if (deflate.Count() > 120) { Log.Message($"tileRiverDefDeflate after setting:\n{deflate.Substring(0, 100)}"); }
+            else Log.Message($"tileRiver after:\n{deflate}");
 
             doc.Save(path);
+          
         }
 
         //Sets the data of the specified XML node
 
         public static void SetDataIntoXML(XmlNode gridNode, string elementName, string replacement)
         {
-            foreach (XmlNode child in gridNode.ChildNodes)
+            try
             {
-                if (child.Name == elementName)
+                if (replacement.Count() > 120) { Log.Message($"First 100 characters of deflate:\n{replacement.Substring(0, 100)}"); }
+                else Log.Message($"First 100 characters of deflate:\n{replacement}");
+            }catch (Exception e)
+            {
+                Log.Message(e.ToString()); 
+            }
+
+            int howMantReturns = ((replacement.Length-1)/100);
+            Log.Message($"Needs {howMantReturns} Inserts");
+            int index = 100;
+            replacement = "\n" + replacement;
+            for (int i = 0; i < howMantReturns; i++) {
+                replacement = replacement.Substring(0,index) + "\n" + replacement.Substring(index);
+                index += 101;
+            }
+            if(replacement.Length > 120)
+                 Log.Message($"At 100 : {replacement[100] == '\n'}");
+            Log.Message($"Found {replacement.Contains("\n")}");
+
+
+            try
+            {
+                foreach (XmlNode child in gridNode.ChildNodes)
                 {
-                    child.InnerText = replacement;
-                    break;
+                    if (child.Name == elementName)
+                    {
+                        child.InnerText = replacement;
+                        break;
+                    }
                 }
+            } catch (Exception e) {
+
+                Log.Message(e.ToString());
             }
         }
 

@@ -44,6 +44,11 @@ namespace GameClient
 
             WorldGeneratorManager.SetValuesFromServer(worldDetailsJSON);
 
+            Log.Message("on existing world");
+            Log.Message(worldDetailsJSON.tileRiverDefDeflate);
+
+
+
             DialogManager.PushNewDialog(new Page_SelectScenario());
 
             RT_Dialog_OK_Loop d1 = new RT_Dialog_OK_Loop(new string[] { "You are joining an existing server for the first time!",

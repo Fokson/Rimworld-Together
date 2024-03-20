@@ -71,7 +71,7 @@ namespace GameClient
                 LongEventHandler.ExecuteWhenFinished(delegate
                 {
                     PostWorldGeneration();
-
+                    Current.CreatingWorld = null;
                     if (!firstGeneration) ClientValues.ToggleRequireSaveManipulation(true);
                 });
             }, "GeneratingWorld", doAsynchronously: true, null);
@@ -124,6 +124,13 @@ namespace GameClient
             }
 
             worldDetailsJSON = XmlParser.GetWorldXmlData(worldDetailsJSON);
+            Log.Message(worldDetailsJSON.tileRiverDefDeflate);
+            Log.Message("send to server:");
+            Log.Message(worldDetailsJSON.tileBiomeDeflate.Substring(0, 100));
+            Log.Message(worldDetailsJSON.tileElevationDeflate.Substring(0, 100));
+            Log.Message(worldDetailsJSON.tileHillinessDeflate.Substring(0,100));
+
+
 
             Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.WorldPacket), worldDetailsJSON);
             Network.listener.dataQueue.Enqueue(packet);
@@ -132,6 +139,8 @@ namespace GameClient
         public static void GetWorldFromServer()
         {
             XmlParser.ModifyWorldXml(cachedWorldDetails);
+
+            Log.Message($"tile.count: {Find.WorldGrid.tiles.Count}\ntilecount: {Find.WorldGrid.TilesCount}");
             GameDataSaveLoader.LoadGame(SaveManager.customSaveName);
         }
 

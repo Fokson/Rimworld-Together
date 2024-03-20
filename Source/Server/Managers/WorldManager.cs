@@ -38,6 +38,7 @@ namespace GameServer
             worldValues.pollution = worldDetailsJSON.pollution;
             worldValues.factions = worldDetailsJSON.factions;
 
+            Logger.WriteToConsole($"Recieved : {worldDetailsJSON.tileRiverDefDeflate}");
             worldValues.tileBiomeDeflate = worldDetailsJSON.tileBiomeDeflate;
             worldValues.tileElevationDeflate = worldDetailsJSON.tileElevationDeflate;
             worldValues.tileHillinessDeflate = worldDetailsJSON.tileHillinessDeflate;
@@ -83,6 +84,7 @@ namespace GameServer
             worldDetailsJSON.pollution = worldValues.pollution;
             worldDetailsJSON.factions = worldValues.factions;
 
+            Logger.WriteToConsole(worldValues.tileRiverDefDeflate);
             worldDetailsJSON.tileBiomeDeflate = worldValues.tileBiomeDeflate;
             worldDetailsJSON.tileElevationDeflate = worldValues.tileElevationDeflate;
             worldDetailsJSON.tileHillinessDeflate = worldValues.tileHillinessDeflate;

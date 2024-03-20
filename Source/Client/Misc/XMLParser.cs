@@ -29,16 +29,15 @@ namespace GameClient
             XmlNode worldNode = GetChildNodeInNode(gameNode, "world");
             XmlNode gridNode = GetChildNodeInNode(worldNode, "grid");
 
-            string mystr = gridNode["hi"].InnerText;
-            worldDetailsJSON.tileBiomeDeflate = gridNode["tileBiomeDeflate"].InnerText; 
-            worldDetailsJSON.tileElevationDeflate = gridNode["tileElevationDeflate"].InnerText;
-            worldDetailsJSON.tileHillinessDeflate = gridNode["tileHillinessDeflate"].InnerText;
-            worldDetailsJSON.tileTemperatureDeflate = gridNode["tileTemperatureDeflate"].InnerText;
-            worldDetailsJSON.tileRainfallDeflate = gridNode["tileRainfallDeflate"].InnerText;
-            worldDetailsJSON.tileSwampinessDeflate = gridNode["tileSwampinessDeflate"].InnerText;
-            worldDetailsJSON.tileFeatureDeflate = gridNode["tileFeatureDeflate"].InnerText;
-            worldDetailsJSON.tilePollutionDeflate = gridNode["tilePollutionDeflate"].InnerText;
-            worldDetailsJSON.tileRoadOriginsDeflate = gridNode["tileRoadOriginsDeflate"].InnerText;
+            worldDetailsJSON.tileBiomeDeflate =             gridNode["tileBiomeDeflate"].InnerText; 
+            worldDetailsJSON.tileElevationDeflate =         gridNode["tileElevationDeflate"].InnerText;
+            worldDetailsJSON.tileHillinessDeflate =         gridNode["tileHillinessDeflate"].InnerText;
+            worldDetailsJSON.tileTemperatureDeflate =       gridNode["tileTemperatureDeflate"].InnerText;
+            worldDetailsJSON.tileRainfallDeflate =          gridNode["tileRainfallDeflate"].InnerText;
+            worldDetailsJSON.tileSwampinessDeflate =        gridNode["tileSwampinessDeflate"].InnerText;
+            worldDetailsJSON.tileFeatureDeflate =           gridNode["tileFeatureDeflate"].InnerText;
+            worldDetailsJSON.tilePollutionDeflate =         gridNode["tilePollutionDeflate"].InnerText;
+            worldDetailsJSON.tileRoadOriginsDeflate =       gridNode["tileRoadOriginsDeflate"].InnerText;
             worldDetailsJSON.tileRoadAdjacencyDeflate =     gridNode["tileRoadAdjacencyDeflate"].InnerText;
             worldDetailsJSON.tileRoadDefDeflate =           gridNode["tileRoadDefDeflate"].InnerText;
             worldDetailsJSON.tileRiverOriginsDeflate =      gridNode["tileRiverOriginsDeflate"].InnerText;

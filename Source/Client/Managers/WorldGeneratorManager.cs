@@ -95,9 +95,11 @@ namespace GameClient
 
             //WorldGenStepDef[] worldGenSteps = GenStepsInOrder.ToArray();
             //worldGenSteps[0].worldGenStep = new RT_WorldGenStep_Terrain();
+
             WorldGenerationData.initializeGenerationDefs();
             WorldGenStepDef[] worldGenSteps = WorldGenerationData.WorldSyncSteps;
             Logs.Message($"Steps count : {GenStepsInOrder.Count()}");
+
             foreach (WorldGenStepDef step in GenStepsInOrder){
                 Logs.Message($"step : {step.ToString()}");
             }
@@ -137,6 +139,15 @@ namespace GameClient
             Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.WorldPacket), worldDetailsJSON);
             Network.listener.EnqueuePacket(packet);
         }
+
+        public static void GetWorldFromServer()
+        {
+            XmlParser.ModifyWorldXml(cachedWorldDetails);
+
+            Log.Message($"tile.count: {Find.WorldGrid.tiles.Count}\ntilecount: {Find.WorldGrid.TilesCount}");
+            GameDataSaveLoader.LoadGame(SaveManager.customSaveName);
+        }
+
 
         public static void PostWorldGeneration()
         {

@@ -27,6 +27,14 @@ namespace GameClient
 
                     SaveManager.ForceSave();
 
+                    if (ClientValues.requireSaveManipulation)
+                    {
+                        RT_Dialog_OK d1 = new RT_Dialog_OK("The world will be reloaded one time to ensure Synchronization",
+                            delegate { WorldGeneratorManager.GetWorldFromServer(); });
+
+                        DialogManager.PushNewDialog(d1);
+                    }
+
                     if (ClientValues.needsToGenerateWorld)
                     {
                         WorldGeneratorManager.SendWorldToServer();
@@ -50,6 +58,12 @@ namespace GameClient
                     PlanetManager.BuildPlanet();
 
                     ClientValues.ToggleReadyToPlay(true);
+
+                    if (ClientValues.requireSaveManipulation)
+                    {
+                        ClientValues.ToggleRequireSaveManipulation(false);
+                        SaveManager.ForceSave();
+                    }
                 }
             }
         }

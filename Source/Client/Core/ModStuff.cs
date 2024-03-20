@@ -135,20 +135,11 @@ namespace GameClient
                 WorldDetailsJSON worldDetailsJSON = new WorldDetailsJSON();
                 XmlParser.GetWorldXmlData(worldDetailsJSON);
 
-                worldValuesFile.tileBiomeDeflate = worldDetailsJSON.tileBiomeDeflate;
-                worldValuesFile.tileElevationDeflate = worldDetailsJSON.tileElevationDeflate;
-                worldValuesFile.tileHillinessDeflate = worldDetailsJSON.tileHillinessDeflate;
-                worldValuesFile.tileTemperatureDeflate = worldDetailsJSON.tileTemperatureDeflate;
-                worldValuesFile.tileRainfallDeflate = worldDetailsJSON.tileRainfallDeflate;
-                worldValuesFile.tileSwampinessDeflate = worldDetailsJSON.tileSwampinessDeflate;
-                worldValuesFile.tileFeatureDeflate = worldDetailsJSON.tileFeatureDeflate;
-                worldValuesFile.tilePollutionDeflate = worldDetailsJSON.tilePollutionDeflate;
-                worldValuesFile.tileRoadOriginsDeflate = worldDetailsJSON.tileRoadOriginsDeflate;
-                worldValuesFile.tileRoadAdjacencyDeflate = worldDetailsJSON.tileRoadAdjacencyDeflate;
-                worldValuesFile.tileRoadDefDeflate = worldDetailsJSON.tileRoadDefDeflate;
-                worldValuesFile.tileRiverOriginsDeflate = worldDetailsJSON.tileRiverOriginsDeflate;
-                worldValuesFile.tileRiverAdjacencyDeflate = worldDetailsJSON.tileRiverAdjacencyDeflate;
-                worldValuesFile.tileRiverDefDeflate = worldDetailsJSON.tileRiverDefDeflate;
+                //Add all the deflates from worldDEtailsJSON to worldValuesFile
+                foreach (string deflateLabel in worldDetailsJSON.deflateDictionary.Keys)
+                {
+                    worldValuesFile.deflateDictionary.Add(deflateLabel, worldDetailsJSON.deflateDictionary[deflateLabel]);
+                }
 
                 Serializer.SerializeToFile(Path.Combine(Master.worldSavesFolderPath, "WorldValues.json"), worldValuesFile);
 

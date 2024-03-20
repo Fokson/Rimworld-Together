@@ -18,6 +18,8 @@ namespace GameClient
 
         public static bool isReadyToPlay;
 
+        public static bool requireSaveManipulation;
+
         //Do not change manually
         public static bool autoDenyTransfers;
 
@@ -63,6 +65,8 @@ namespace GameClient
         public static void ToggleQuiting(bool mode) { isQuiting = mode; }
 
         public static void ToggleReadyToPlay(bool mode) { isReadyToPlay = mode; }
+
+        public static void ToggleRequireSaveManipulation(bool mode) { requireSaveManipulation = mode; }
 
         public static void ToggleTransfer(bool mode) { isInTransfer = mode; }
 

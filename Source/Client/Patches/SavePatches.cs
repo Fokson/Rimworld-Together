@@ -32,9 +32,13 @@ namespace GameClient
                     ___lastSaveTick = Find.TickManager.TicksGame;
                 }
                 catch (Exception ex) { Log.Error("Exception while saving game: " + ex); }
+                
+                if (!ClientValues.requireSaveManipulation)
+                {
+                    MapManager.SendPlayerMapsToServer();
+                    SaveManager.SendSavePartToServer(fileName);
+                }
 
-                MapManager.SendPlayerMapsToServer();
-                SaveManager.SendSavePartToServer(fileName);
                 ClientValues.ToggleSaving(false);
                 return false;
             }

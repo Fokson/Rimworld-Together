@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
 namespace Shared
 {
     [Serializable]
@@ -17,19 +16,8 @@ namespace Shared
         public string pollution;
         public List<string> factions = new List<string>();
 
-        public string tileBiomeDeflate;
-        public string tileElevationDeflate;
-        public string tileHillinessDeflate;
-        public string tileTemperatureDeflate;
-        public string tileRainfallDeflate;
-        public string tileSwampinessDeflate;
-        public string tileFeatureDeflate;
-        public string tilePollutionDeflate;
-        public string tileRoadOriginsDeflate;
-        public string tileRoadAdjacencyDeflate;
-        public string tileRoadDefDeflate;
-        public string tileRiverOriginsDeflate;
-        public string tileRiverAdjacencyDeflate;
-        public string tileRiverDefDeflate;
+        // string 1 - Deflate Label
+        // srting 2 - World Deflate
+        public Dictionary<string,string> deflateDictionary = new Dictionary<string,string>();
     }
 }

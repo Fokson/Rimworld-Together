@@ -30,10 +30,10 @@ namespace GameClient
         public static void FindPlayerFactionsInWorld()
         {
             Faction[] factions = Find.FactionManager.AllFactions.ToArray();
-            neutralPlayer = factions.FirstOrDefault(fetch => fetch.def.defName == "RTNeutral");
-            allyPlayer = factions.FirstOrDefault(fetch => fetch.def.defName == "RTAlly");
-            enemyPlayer = factions.FirstOrDefault(fetch => fetch.def.defName == "RTEnemy");
-            yourOnlineFaction = factions.FirstOrDefault(fetch => fetch.def.defName == "RTFaction");
+            neutralPlayer = factions.First(fetch => fetch.def.defName == "RTNeutral");
+            allyPlayer = factions.First(fetch => fetch.def.defName == "RTAlly");
+            enemyPlayer = factions.First(fetch => fetch.def.defName == "RTEnemy");
+            yourOnlineFaction = factions.First(fetch => fetch.def.defName == "RTFaction");
 
             playerFactions.Clear();
             playerFactions.Add(neutralPlayer);

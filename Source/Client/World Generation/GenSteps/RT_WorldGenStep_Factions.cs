@@ -15,7 +15,7 @@ namespace RimWorld.Planet
 
 		public override void GenerateFresh(string seed)
 		{
-			FactionGenerator.GenerateFactionsIntoWorld();
+			FactionGenerator.GenerateFactionsIntoWorld(Current.CreatingWorld.info.factions);
 		}
 
 		public override void GenerateWithoutWorldData(string seed)

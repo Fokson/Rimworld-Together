@@ -116,7 +116,7 @@ namespace GameClient
         {
             if (Network.isConnectedToServer)
             {
-                WorldValuesFile worldValuesFile = new WorldValuesFile();
+                WorldDetailsJSON worldValuesFile = new WorldDetailsJSON();
 
                 worldValuesFile.seedString = Find.World.info.seedString;
                 worldValuesFile.persistentRandomValue = Find.World.info.persistentRandomValue;

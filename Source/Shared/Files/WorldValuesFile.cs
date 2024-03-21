@@ -17,5 +17,8 @@ namespace Shared
 
         //dictionary of world deflates
         public Dictionary<string,string> deflateDictionary = new Dictionary<string,string>();
+
+        //string of world Objects
+        public string worldObjects = "";
     }
 }

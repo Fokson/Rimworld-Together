@@ -16,8 +16,11 @@ namespace Shared
         public string pollution;
         public List<string> factions = new List<string>();
 
-        // string 1 - Deflate Label
-        // srting 2 - World Deflate
+        // key - Deflate Label
+        // value - World Deflate
         public Dictionary<string,string> deflateDictionary = new Dictionary<string,string>();
+
+        // string of the world Objects class (for settlements and their locations)
+        public string WorldObjects = "";
     }
 }

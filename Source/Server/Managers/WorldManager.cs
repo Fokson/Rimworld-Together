@@ -28,26 +28,8 @@ namespace GameServer
 
         public static void SaveWorldPrefab(ServerClient client, WorldDetailsJSON worldDetailsJSON)
         {
-            WorldValuesFile worldValues = new WorldValuesFile();
-            worldValues.seedString = worldDetailsJSON.seedString;
-            worldValues.persistentRandomValue = worldDetailsJSON.persistentRandomValue;
-            worldValues.planetCoverage = worldDetailsJSON.planetCoverage;
-            worldValues.rainfall = worldDetailsJSON.rainfall;
-            worldValues.temperature = worldDetailsJSON.temperature;
-            worldValues.population = worldDetailsJSON.population;
-            worldValues.pollution = worldDetailsJSON.pollution;
-            worldValues.factions = worldDetailsJSON.factions;
-
-
-
-            //Add all the deflates from worldDEtailsJSON to worldValuesFile
-            foreach (string deflateLabel in worldDetailsJSON.deflateDictionary.Keys)
-            {
-                worldValues.deflateDictionary.Add(deflateLabel, worldDetailsJSON.deflateDictionary[deflateLabel]);
-            }
-
-            Master.worldValues = worldValues;
-            Serializer.SerializeToFile(worldFilePath, worldValues);
+            Master.worldValues = worldDetailsJSON;
+            Serializer.SerializeToFile(worldFilePath, Master.worldValues);
             Logger.WriteToConsole($"[Save world] > {client.username}", Logger.LogMode.Title);
         }
 
@@ -62,26 +44,7 @@ namespace GameServer
 
         public static void SendWorldFile(ServerClient client)
         {
-            WorldValuesFile worldValues = Master.worldValues;
-
-            WorldDetailsJSON worldDetailsJSON = new WorldDetailsJSON();
-            worldDetailsJSON.worldStepMode = ((int)CommonEnumerators.WorldStepMode.Existing).ToString();
-
-            worldDetailsJSON.seedString = worldValues.seedString;
-            worldDetailsJSON.persistentRandomValue = worldValues.persistentRandomValue;
-            worldDetailsJSON.planetCoverage = worldValues.planetCoverage;
-            worldDetailsJSON.rainfall = worldValues.rainfall;
-            worldDetailsJSON.temperature = worldValues.temperature;
-            worldDetailsJSON.population = worldValues.population;
-            worldDetailsJSON.pollution = worldValues.pollution;
-            worldDetailsJSON.factions = worldValues.factions;
-
-            foreach (string deflatelabel in worldValues.deflateDictionary.Keys)
-            {
-                worldDetailsJSON.deflateDictionary.Add(deflatelabel, worldValues.deflateDictionary[deflatelabel]);
-            }
-
-            Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.WorldPacket), worldDetailsJSON);
+            Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.WorldPacket), Master.worldValues);
             client.listener.EnqueuePacket(packet);
         }
 
@@ -89,7 +52,7 @@ namespace GameServer
         {
             if (File.Exists(worldFilePath))
             {
-                Master.worldValues = Serializer.SerializeFromFile<WorldValuesFile>(worldFilePath);
+                Master.worldValues = Serializer.SerializeFromFile<WorldDetailsJSON>(worldFilePath);
 
                 Logger.WriteToConsole("Loaded world values", Logger.LogMode.Warning);
             }

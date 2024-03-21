@@ -1,9 +1,12 @@
+using HugsLib.Utils;
 using Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Xml.Serialization;
+using UnityEngine.ParticleSystemJobs;
 using Verse;
 
 namespace GameClient
@@ -18,7 +21,6 @@ namespace GameClient
 
             XmlDocument doc = new XmlDocument();
             doc.Load(filePath);
-
             //Navigate to the grid in the xml file
             XmlNode docNode = GetChildNodeInNode(doc, "savegame");
             XmlNode gameNode = GetChildNodeInNode(docNode, "game");
@@ -29,9 +31,12 @@ namespace GameClient
             {
                 worldDetailsJSON.deflateDictionary.Add(deflateNode.Name,deflateNode.InnerText);
             }
-
+            
+            XmlNode worldObjectsNode = GetChildNodeInNode(worldNode, "worldObjects");
+            worldDetailsJSON.WorldObjects  = worldObjectsNode.InnerXml;
             return worldDetailsJSON;
         }
+
 
         //Modifies the existing XML file with the required details from the server
 
@@ -63,53 +68,11 @@ namespace GameClient
                     gridNode[deflateLabel].InnerText = worldDeflates[deflateLabel];
                 }
             }
+
+
+            XmlNode worldObjectsNode = GetChildNodeInNode(worldNode, "worldObjects");
+            worldObjectsNode.InnerXml = worldDetailsJSON.WorldObjects;
             doc.Save(filePath);
-        }
-
-        //Sets the data of the specified XML node
-
-        public static void SetDataIntoXML(XmlNode gridNode, string elementName, string replacement)
-        {
-            try
-            {
-                if (replacement.Count() > 120) { Log.Message($"First 100 characters of deflate:\n{replacement.Substring(0, 100)}"); }
-                else Log.Message($"First 100 characters of deflate:\n{replacement}");
-            }
-            catch (Exception e)
-            {
-                Log.Message(e.ToString());
-            }
-
-            int howMantReturns = ((replacement.Length - 1) / 100);
-            Log.Message($"Needs {howMantReturns} Inserts");
-            int index = 100;
-            replacement = "\n" + replacement;
-            for (int i = 0; i < howMantReturns; i++)
-            {
-                replacement = replacement.Substring(0, index) + "\n" + replacement.Substring(index);
-                index += 101;
-            }
-            if (replacement.Length > 120)
-                Log.Message($"At 100 : {replacement[100] == '\n'}");
-            Log.Message($"Found {replacement.Contains("\n")}");
-
-
-            try
-            {
-                foreach (XmlNode child in gridNode.ChildNodes)
-                {
-                    if (child.Name == elementName)
-                    {
-                        child.InnerText = replacement;
-                        break;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-
-                Log.Message(e.ToString());
-            }
         }
 
         //Gets a specific child inside of the specified node's children

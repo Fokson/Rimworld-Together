@@ -34,7 +34,7 @@ namespace GameServer
 
         public static WhitelistFile whitelist;
         public static SiteValuesFile siteValues;
-        public static WorldValuesFile worldValues;
+        public static WorldDetailsJSON worldValues;
         public static EventValuesFile eventValues;
         public static ServerConfigFile serverConfig;
         public static ServerValuesFile serverValues;

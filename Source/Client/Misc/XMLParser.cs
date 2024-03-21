@@ -25,7 +25,7 @@ namespace GameClient
             XmlNode worldNode = GetChildNodeInNode(gameNode, "world");
             XmlNode gridNode = GetChildNodeInNode(worldNode, "grid");
 
-            foreach (XmlNode deflateNode in docNode.ChildNodes)
+            foreach (XmlNode deflateNode in gridNode.ChildNodes)
             {
                 worldDetailsJSON.deflateDictionary.Add(deflateNode.Name,deflateNode.InnerText);
             }
@@ -50,17 +50,20 @@ namespace GameClient
 
             Dictionary<string, string> worldDeflates = worldDetailsJSON.deflateDictionary;
 
+            Logs.Message("Startin for");
             //set each deflate in the player's save to the deflate from the server
             foreach (string deflateLabel in worldDeflates.Keys)
             {
+                Logs.Message($"Setting deflate for {deflateLabel}");
                 XmlNode deflateNode = gridNode[deflateLabel];
-
+                Logs.Message($"Resulting deflate is {((deflateNode == null) ? "null":"copied")}");
                 //if the player does not have that label, don't attempt to add it
                 if (deflateNode != null)
                 {
                     gridNode[deflateLabel].InnerText = worldDeflates[deflateLabel];
                 }
             }
+            doc.Save(filePath);
         }
 
         //Sets the data of the specified XML node

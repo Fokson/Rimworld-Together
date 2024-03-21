@@ -53,15 +53,21 @@ namespace GameClient
             pollution = float.Parse(worldDetailsJSON.pollution);
 
             factions = new List<FactionDef>();
-            foreach(string str in worldDetailsJSON.factions)
+            FactionDef factionToAdd;
+            foreach (string str in worldDetailsJSON.factions)
             {
-                factions.Add(DefDatabase<FactionDef>.AllDefs.First(fetch => fetch.defName == str));
+                factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(fetch => fetch.defName == str);
+                if (factionToAdd == null)
+                {
+                    factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(fetch => fetch.defName == "OutlanderCivil");
+                }
+                factions.Add(factionToAdd);
             }
 
             cachedWorldDetails = worldDetailsJSON;
         }
 
-        public static void GeneratePatchedWorld()
+        public static void GeneratePatchedWorld(bool firstGeneration)
         {
             DialogManager.clearStack();
             LongEventHandler.QueueLongEvent(delegate
@@ -70,6 +76,7 @@ namespace GameClient
                 Current.Game.World = GenerateWorld();
                 LongEventHandler.ExecuteWhenFinished(delegate 
                 {
+                    if (!firstGeneration) ClientValues.ToggleRequireSaveManipulation(true);
                     Find.World.renderer.RegenerateAllLayersNow();
                     MemoryUtility.UnloadUnusedUnityAssets();
                     Current.CreatingWorld = null;
@@ -135,7 +142,7 @@ namespace GameClient
             }
 
             worldDetailsJSON = XmlParser.GetWorldXmlData(worldDetailsJSON);
-
+            Logs.Message(worldDetailsJSON.deflateDictionary[worldDetailsJSON.deflateDictionary.Keys.Last()]);
             Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.WorldPacket), worldDetailsJSON);
             Network.listener.EnqueuePacket(packet);
         }

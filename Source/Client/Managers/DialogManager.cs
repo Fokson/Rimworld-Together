@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using Verse;
 using System.Linq;
+using static Shared.CommonEnumerators;
+using System;
 
 namespace GameClient
 {
     public static class DialogManager
     {
+        public static float test;
         //      inputCache
         // Any time a dialog that has inputs is left (it is popped from the stack or a new dialog is pushed)
         // ,it will save its own list of inputs to inputCache
@@ -32,10 +35,8 @@ namespace GameClient
             {
                 try
                 {
-                    Logs.Message($"[Rimworld Together] > Pushing {window.ToString()}");
-
                     //Hide the current window
-                    if (windowStack.Count > 0 )
+                    if (windowStack.Count > 0)
                         Find.WindowStack.TryRemove(windowStack.Peek());
 
                     //add the new window to the internal stack
@@ -46,12 +47,8 @@ namespace GameClient
 
                     //draw the new window
                     Find.WindowStack.Add(window);
-                    ListWindows();
                 }
-                catch (System.Exception ex)
-                {
-                    Logs.Message(ex.ToString());
-                }
+                catch (Exception e) { Logger.WriteToConsole(e.ToString(), LogMode.Error); }
             }
         }
 
@@ -62,7 +59,6 @@ namespace GameClient
 
         public static void clearInternalStack()
         {
-            Logs.Message("cleared window stack");
             windowStack.Clear();
         }
 
@@ -70,7 +66,6 @@ namespace GameClient
         {
             while (windowStack.Count > 0)
             {
-                Logs.Message($"[Rimworld Together] > popping {windowStack.Peek().ToString()}");
                 Find.WindowStack.TryRemove(windowStack.Pop(), true);
                 if (windowStack.Count > 0)
                     Find.WindowStack.Add(windowStack.Peek());
@@ -81,18 +76,15 @@ namespace GameClient
 
             if (windowStack.Count > 0)
             {
-                Logs.Message($"[Rimworld Together] > popping {windowStack.Peek().ToString()}");
                 Find.WindowStack.TryRemove(windowStack.Pop(), true);
                 if (windowStack.Count > 0) Find.WindowStack.Add(windowStack.Peek());
             }
         }
 
-
         public static void PopDialog(Window window)
         {
             if (windowStack.Count > 0)
             {
-                Logs.Message($"[Rimworld Together] > popping {windowStack.Peek().ToString()}");
                 Find.WindowStack.TryRemove(windowStack.Pop(), true);
                 if (windowStack.Count > 0) Find.WindowStack.Add(windowStack.Peek());
             }
@@ -102,16 +94,38 @@ namespace GameClient
         {
             currentDialogInputs.CacheInputs();
             inputReserve = new List<object>(inputCache);
-            Logs.Message($"[Rimworld Together] > Cached inputs for {currentDialogInputs}");
         }
 
-        private static void ListWindows()
+        public static string[] SubstituteInputs(List<object> newInputs)
         {
-            Window[] winArray = windowStack.ToArray();
-            for (int i = winArray.Length-1; i >= 0;i--)
+            string[] inputResults = new string[] { };
+
+            //Exception handling
+            if (newInputs.Count < 2)
             {
-                Logs.Message($"Window at {i} is {winArray[i]}");
+                Logger.WriteToConsole("newInputs in SubstituteInputs at RT_Dialog_1Input has too few elements; No changes will be made", LogMode.Error);
+                return null;
             }
+
+            else if (newInputs.Count > 2)
+            {
+                Logger.WriteToConsole("newInputs in SubstituteInputs at RT_Dialog_1Input has more elements than necessary, some elements will not be used", LogMode.Warning);
+                return null;
+            }
+
+            //For each value in inputResultList, set it to the corrosponding value in newInputs
+            for (int index = 0; index < inputResults.Count(); index++)
+            {
+                if (inputResults[index].GetType() != newInputs[index].GetType())
+                {
+                    Logger.WriteToConsole("newInputs in RT_Dialog_2Inputs.SubstituteInputs contained non-matching types at index {index}, No changes will be made", LogMode.Error);
+                    return null;
+                }
+
+                inputResults[index] = (string)newInputs[index];
+            }
+
+            return inputResults;
         }
     }
 }

@@ -56,7 +56,7 @@ namespace GameClient
 
         public static void RequestVisit()
         {
-            if (ClientValues.isInVisit) DialogManager.PushNewDialog(new RT_Dialog_Error("You are already visiting someone!"));
+            if (ClientValues.isInVisit) DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "You are already visiting someone!"));
             else
             {
                 Action r1 = delegate
@@ -111,7 +111,7 @@ namespace GameClient
             CameraJumper.TryJump(pawnToFocus);
 
             Threader.GenerateThread(Threader.Mode.Visit);
-            RT_Dialog_OK_Loop d1 = new RT_Dialog_OK_Loop(new string[]
+            RT_Dialog_OK_Loop d1 = new RT_Dialog_OK_Loop("MESSAGE", new string[]
             {
                 "You are now in online visit mode!",
                 "Visit mode allows you to visit another player's base",
@@ -175,21 +175,21 @@ namespace GameClient
                         };
             if (ModManager.CheckIfMapHasConflictingMods(mapDetailsJSON))
             {
-                DialogManager.PushNewDialog(new RT_Dialog_OK("Map received but contains unknown mod data", r1));
+                DialogManager.PushNewDialog(new RT_Dialog_OK("MESSAGE", "Map received but contains unknown mod data", r1));
             }
-            else DialogManager.PushNewDialog(new RT_Dialog_OK("Map received", r1));
+            else DialogManager.PushNewDialog(new RT_Dialog_OK("MESSAGE", "Map received", r1));
         }
 
         private static void OnVisitReject()
         {
             DialogManager.clearStack();
-            DialogManager.PushNewDialog(new RT_Dialog_Error("Player rejected the visit!"));
+            DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "Player rejected the visit!"));
         }
 
         private static void OnVisitUnavailable()
         {
             DialogManager.clearStack();
-            DialogManager.PushNewDialog(new RT_Dialog_Error("Player must be online!"));
+            DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "Player must be online!"));
         }
 
         private static void OnVisitStop()
@@ -197,7 +197,7 @@ namespace GameClient
             if (!ClientValues.isInVisit) return;
             else
             {
-                DialogManager.PushNewDialog(new RT_Dialog_OK("Visiting event ended"));
+                DialogManager.PushNewDialog(new RT_Dialog_OK("MESSAGE", "Visiting event ended"));
 
                 foreach (Pawn pawn in otherPlayerPawns.ToArray()) pawn.Destroy();
 
@@ -434,7 +434,7 @@ namespace GameClient
                     if (ClientValues.isInVisit)
                     {
                         ChatManager.SendMessage("/sv");
-                        Logs.Message("[Rimworld Together] > Visit has ended");
+                        Logger.WriteToConsole("Visit has ended", LogMode.Message);
                     }
                 }
 
@@ -465,7 +465,7 @@ namespace GameClient
 
                     visitDetailsJSON.pawnPositions.Add($"{pawn.Position.x}|{pawn.Position.y}|{pawn.Position.z}");
                 }
-                catch { Logs.Warning($"Couldn't get job for {pawn}"); }
+                catch { Logger.WriteToConsole($"Couldn't get job for {pawn}", LogMode.Error); }
             }
 
             visitDetailsJSON.visitStepMode = ((int)VisitStepMode.Action).ToString();
@@ -495,7 +495,7 @@ namespace GameClient
                     VisitActionHelper.ChangeCurrentJobIfNeeded(otherPawns[i], newJob);
 
                 }
-                catch { Logs.Warning($"Couldn't set job for {otherPawns[i]}"); }
+                catch { Logger.WriteToConsole($"Couldn't set job for {otherPawns[i]}", LogMode.Error); }
             }
         }
     }
@@ -550,7 +550,7 @@ namespace GameClient
                     toReturn = $"{targetInfo.Cell.x}|{targetInfo.Cell.y}|{targetInfo.Cell.z}";
                 }
             }
-            catch { Logs.Error($"failed to parse {targetInfo}"); }
+            catch { Logger.WriteToConsole($"failed to parse {targetInfo}", LogMode.Error); }
 
             return toReturn;
         }
@@ -591,7 +591,7 @@ namespace GameClient
                         break;
                 }
             }
-            catch { Logs.Error($"Failed to get target from {toReadFrom} as {actionTargetType}"); }
+            catch { Logger.WriteToConsole($"Failed to get target from {toReadFrom} as {actionTargetType}", LogMode.Error); }
 
             return target;
         }
@@ -599,7 +599,7 @@ namespace GameClient
         public static JobDef TryGetJobDefForJob(Pawn pawnForJob, string jobDefName)
         {
             try { return DefDatabase<JobDef>.AllDefs.ToList().Find(fetch => fetch.defName == jobDefName); }
-            catch { Logs.Warning($"Couldn't get job def of {pawnForJob.Label}"); }
+            catch { Logger.WriteToConsole($"Couldn't get job def of {pawnForJob.Label}", LogMode.Error); }
 
             return null;
         }
@@ -607,7 +607,7 @@ namespace GameClient
         public static LocalTargetInfo TryGetLocalTargetInfo(Pawn pawnForJob, string actionTarget, string actionTargetType)
         {
             try { return GetActionTargetFromString(actionTarget, actionTargetType); }
-            catch { Logs.Warning($"Couldn't get job target for {pawnForJob.Label}"); }
+            catch { Logger.WriteToConsole($"Couldn't get job target for {pawnForJob.Label}", LogMode.Error); }
 
             return null;
         }
@@ -615,7 +615,7 @@ namespace GameClient
         public static Job TryCreateNewJob(Pawn pawnForJob, JobDef jobDef, LocalTargetInfo localTargetA)
         {
             try { return JobMaker.MakeJob(jobDef, localTargetA); }
-            catch { Logs.Warning($"Couldn't create job for {pawnForJob.Label}"); }
+            catch { Logger.WriteToConsole($"Couldn't create job for {pawnForJob.Label}", LogMode.Error); }
 
             return null;
         }
@@ -628,7 +628,7 @@ namespace GameClient
                 if (job.def == JobDefOf.Wait_Combat) pawn.drafter.Drafted = true;
                 else pawn.drafter.Drafted = false;
             }
-            catch { Logs.Warning($"Couldn't draft {pawn}"); }
+            catch { Logger.WriteToConsole($"Couldn't draft {pawn}", LogMode.Error); }
         }
 
         public static void TryChangePawnPosition(Pawn pawn, VisitDetailsJSON visitDetailsJSON, int index)
@@ -640,7 +640,7 @@ namespace GameClient
                 pawn.pather.Notify_Teleported_Int();
                 pawn.Position = updatedPosition;
             }
-            catch { Logs.Warning($"Couldn't give position to {pawn}"); }
+            catch { Logger.WriteToConsole($"Couldn't give position to {pawn}", LogMode.Error); }
         }
 
         public static void ChangeCurrentJobIfNeeded(Pawn pawn, Job newJob)

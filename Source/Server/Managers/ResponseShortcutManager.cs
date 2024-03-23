@@ -1,16 +1,21 @@
 ﻿using Shared;
+using static Shared.CommonEnumerators;
 
 namespace GameServer
 {
     public static class ResponseShortcutManager
     {
-        public static void SendIllegalPacket(ServerClient client, bool broadcast = true)
+        public static void SendIllegalPacket(ServerClient client, string message, bool shouldBroadcast = true)
         {
             Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.IllegalActionPacket));
             client.listener.EnqueuePacket(packet);
             client.listener.disconnectFlag = true;
 
-            if (broadcast) Logger.WriteToConsole($"[Illegal action] > {client.username} > {client.SavedIP}", Logger.LogMode.Error);
+            if (shouldBroadcast) 
+            { 
+                Logger.WriteToConsole($"[Illegal action] > {client.username} > {client.SavedIP}", LogMode.Warning);
+                Logger.WriteToConsole($"[Illegal reason] > {message}", LogMode.Warning);
+            }
         }
 
         public static void SendUnavailablePacket(ServerClient client)

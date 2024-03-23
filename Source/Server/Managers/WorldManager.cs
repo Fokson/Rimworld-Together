@@ -1,4 +1,5 @@
 ﻿using Shared;
+using static Shared.CommonEnumerators;
 
 namespace GameServer
 {
@@ -30,7 +31,7 @@ namespace GameServer
         {
             Master.worldValues = worldDetailsJSON;
             Serializer.SerializeToFile(worldFilePath, Master.worldValues);
-            Logger.WriteToConsole($"[Save world] > {client.username}", Logger.LogMode.Title);
+            Logger.WriteToConsole($"[Save world] > {client.username}", LogMode.Title);
         }
 
         public static void RequireWorldFile(ServerClient client)
@@ -54,10 +55,10 @@ namespace GameServer
             {
                 Master.worldValues = Serializer.SerializeFromFile<WorldDetailsJSON>(worldFilePath);
 
-                Logger.WriteToConsole("Loaded world values", Logger.LogMode.Warning);
+                Logger.WriteToConsole("Loaded world values", LogMode.Warning);
             }
 
-            else Logger.WriteToConsole("[Warning] > World is missing. Join server to create it", Logger.LogMode.Warning);   
+            else Logger.WriteToConsole("[Warning] > World is missing. Join server to create it", LogMode.Warning);   
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using static Shared.CommonEnumerators;
 
 namespace GameClient
 {
@@ -24,9 +25,6 @@ namespace GameClient
 
         private string inputOneLabel;
         private string inputTwoLabel;
-
-        private char censorSymbol = '*';
-        private string Str_censorSymbol = "";
 
         private bool inputOneCensored;
         private string inputOneDisplay;
@@ -50,8 +48,6 @@ namespace GameClient
         public RT_Dialog_2Input(string title, string inputOneLabel, string inputTwoLabel, Action actionConfirm, Action actionCancel, 
             bool inputOneCensored = false, bool inputTwoCensored = false)
         {
-
-            this.Str_censorSymbol = censorSymbol.ToString();
             this.title = title;
             this.actionConfirm = actionConfirm;
             this.actionCancel = actionCancel;
@@ -95,10 +91,6 @@ namespace GameClient
             //draw confirm button
             if (Widgets.ButtonText(new Rect(new Vector2(rect.xMin, rect.yMax - buttonY), new Vector2(buttonX, buttonY)), "Confirm"))
             {
-                if (inputResultList != null)
-                    Logs.Message($"inputs are: {inputResultList[0]} and {inputResultList[1]}");
-                else Logs.Message($"inputResultList is null");
-
                 CacheInputs();
                 if (actionConfirm != null) actionConfirm.Invoke();
                 else DialogManager.PopDialog();
@@ -126,7 +118,7 @@ namespace GameClient
 
             //if censorship is on, set the Input display to censorship symbol
             //else set it to the input string
-            if (inputOneCensored) inputOneDisplay = new string(censorSymbol, inputResultList[0].Length);
+            if (inputOneCensored) inputOneDisplay = new string('*', inputResultList[0].Length);
             else inputOneDisplay = inputResultList[0];
 
             //Draw the textField using input display string
@@ -136,7 +128,7 @@ namespace GameClient
 
             //if new input is detected, add it to the final input string
             if ((inputOneDisplay.Length > inputResultList[0].Length) && (inputOneDisplay.Length <= 32)) inputResultList[0] += inputOneDisplay.Substring(inputResultList[0].Length);
-            else if (inputDisplayBefore != inputOneDisplay) inputResultList[0] = DialogShortcuts.replaceNonCensoredSymbols(inputResultList[0], inputOneDisplay, inputOneCensored, Str_censorSymbol);
+            else if (inputDisplayBefore != inputOneDisplay) inputResultList[0] = DialogShortcuts.ReplaceNonCensoredSymbols(inputResultList[0], inputOneDisplay, inputOneCensored);
         }
 
         private void DrawInputTwo(float centeredX, float labelDif, float normalDif)
@@ -151,7 +143,7 @@ namespace GameClient
 
             //if censorship is on, set the Input display to censorship symbol
             //else set it to the input string
-            if (inputTwoCensored) inputTwoDisplay = new string(censorSymbol, inputResultList[1].Length);
+            if (inputTwoCensored) inputTwoDisplay = new string('*', inputResultList[1].Length);
             else inputTwoDisplay = inputResultList[1];
 
             //Draw the textField using inputTwoDisplay
@@ -161,42 +153,22 @@ namespace GameClient
 
             //if new input is detected, add it to the final input string
             if ((inputTwoDisplay.Length > inputResultList[1].Length) && (inputTwoDisplay.Length <= 32)) inputResultList[1] += inputTwoDisplay.Substring(inputResultList[1].Length);
-            else if (inputDisplayBefore != inputTwoDisplay) inputResultList[1] = DialogShortcuts.replaceNonCensoredSymbols(inputResultList[1], inputTwoDisplay, inputTwoCensored, Str_censorSymbol);
+            else if (inputDisplayBefore != inputTwoDisplay) inputResultList[1] = DialogShortcuts.ReplaceNonCensoredSymbols(inputResultList[1], inputTwoDisplay, inputTwoCensored);
 
         }
-        public virtual void CacheInputs()
-        {
 
-            DialogManager.inputCache = inputList;
-            Logs.Message($"inputCache is {DialogManager.inputCache != null}");
+        public virtual void CacheInputs() { DialogManager.inputCache = inputList; }
 
-        }
         public virtual void SubstituteInputs(List<object> newInputs)
         {
-
-            //exception handling
-            if (newInputs.Count < 2)
+            //Exception handling
+            if (newInputs.Count != 2)
             {
-                Logs.Error("[RimWorld Together] > ERROR: newInputs in RT_Dialog_2Inputs.SubstituteInputs has too few elements; No changes will be made");
+                Logger.WriteToConsole("newInputs in SubstituteInputs at RT_Dialog_1Input has wrong number of elements; No changes will be made", LogMode.Error);
                 return;
             }
-            else if (newInputs.Count > 2)
-            {
-                Logs.Warning("[RimWorld Together] > WARNING: newInputs in RT_Dialog_2Inputs.SubstituteInputs has more elements than necessary, some elements will not be used ");
-            }
-
-            //for each value in inputResultList, set it to the corrosponding value in newInputs
-            Logs.Message($"input result count: {inputResultList.Count}");
-            for (int index = 0; index < inputResultList.Count;index++)
-            {
-                if (inputResultList[index].GetType() != newInputs[index].GetType())
-                {
-                    Logs.Error($"[RimWorld Together] > ERROR: newInputs in RT_Dialog_2Inputs.SubstituteInputs contained non-matching types at index {index}, No changes will be made");
-                    return;
-                }
-                inputResultList[index] = (string)newInputs[index];
-            }
-            Logs.Message($"{inputResultList[0]} : {inputResultList[1]}");
+            inputResultList[0] = (string)newInputs[0];
+            inputResultList[1] = (string)newInputs[1];
         }
     }
 }

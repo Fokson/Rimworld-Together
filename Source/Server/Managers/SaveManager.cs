@@ -1,4 +1,5 @@
 ﻿using Shared;
+using static Shared.CommonEnumerators;
 
 namespace GameServer
 {
@@ -112,7 +113,7 @@ namespace GameServer
 
         public static void ResetClientSave(ServerClient client)
         {
-            if (!CheckIfUserHasSave(client)) ResponseShortcutManager.SendIllegalPacket(client);
+            if (!CheckIfUserHasSave(client)) ResponseShortcutManager.SendIllegalPacket(client, "Player's save was attempted to be reset while the player doesn't have a save");
             else
             {
                 client.listener.disconnectFlag = true;
@@ -122,7 +123,7 @@ namespace GameServer
                 string toDelete = saves.ToList().Find(x => Path.GetFileNameWithoutExtension(x) == client.username);
                 if (!string.IsNullOrWhiteSpace(toDelete)) File.Delete(toDelete);
 
-                Logger.WriteToConsole($"[Delete save] > {client.username}", Logger.LogMode.Warning);
+                Logger.WriteToConsole($"[Delete save] > {client.username}", LogMode.Warning);
 
                 MapFileJSON[] userMaps = MapManager.GetAllMapsFromUsername(client.username);
                 foreach (MapFileJSON map in userMaps) MapManager.DeleteMap(map);
@@ -167,7 +168,7 @@ namespace GameServer
                 SettlementManager.RemoveSettlement(null, settlementDetailsJSON, false);
             }
 
-            Logger.WriteToConsole($"[Deleted player details] > {username}", Logger.LogMode.Warning);
+            Logger.WriteToConsole($"[Deleted player details] > {username}", LogMode.Warning);
         }
     }
 }

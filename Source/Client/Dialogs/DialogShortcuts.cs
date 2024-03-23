@@ -11,7 +11,7 @@ namespace GameClient
         public static void ShowRegisteredDialog()
         {
 
-            RT_Dialog_OK_Loop d1 = new RT_Dialog_OK_Loop(new string[] { "You have been successfully registered!",
+            RT_Dialog_OK_Loop d1 = new RT_Dialog_OK_Loop("MESSAGE",new string[] { "You have been successfully registered!",
                 "You are now able to login using your new account"},
                 delegate{
                     DialogManager.clearStack();
@@ -60,7 +60,7 @@ namespace GameClient
 
         public static void ShowWorldGenerationDialogs()
         {
-            RT_Dialog_OK d3 = new RT_Dialog_OK("This feature is not implemented yet!",
+            RT_Dialog_OK d3 = new RT_Dialog_OK("MESSAGE", "This feature is not implemented yet!",
                 DialogManager.PopDialog);
 
             RT_Dialog_2Button d2 = new RT_Dialog_2Button("Game Mode", "Choose the way you want to play",
@@ -71,7 +71,7 @@ namespace GameClient
                     Network.listener.disconnectFlag = true;
                 });
 
-            RT_Dialog_OK_Loop d1 = new RT_Dialog_OK_Loop(new string[] { "Welcome to the world view!",
+            RT_Dialog_OK_Loop d1 = new RT_Dialog_OK_Loop("MESSAGE", new string[] { "Welcome to the world view!",
                         "Please choose the way you would like to play", "This mode can't be changed upon choosing!" },
                 delegate { DialogManager.PushNewDialog(d2); });
 
@@ -151,7 +151,7 @@ namespace GameClient
 
             else
             {
-                RT_Dialog_Error d1 = new RT_Dialog_Error("Server details are invalid! Please try again!");
+                RT_Dialog_OK d1 = new RT_Dialog_OK("ERROR", "Server details are invalid! Please try again!");
                 DialogManager.PushNewDialog(d1);
             }
         }
@@ -167,30 +167,22 @@ namespace GameClient
             {
                 DialogManager.PushNewDialog(new RT_Dialog_Wait("Waiting for login response"));
                 JoinDetailsJSON loginDetails = new JoinDetailsJSON();
-                Logs.Message($"Username: {(string)DialogManager.inputCache[0]}");
                 loginDetails.username = (string)DialogManager.inputCache[0];
-
-                Logs.Message($"password: {(string)DialogManager.inputCache[1]}");
                 loginDetails.password = Hasher.GetHashFromString((string)DialogManager.inputCache[1]);
-
-                Logs.Message($"Version: {CommonValues.executableVersion}");
                 loginDetails.clientVersion = CommonValues.executableVersion;
-
                 loginDetails.runningMods = ModManager.GetRunningModList().ToList();
 
                 ChatManager.username = loginDetails.username;
                 PreferenceManager.SaveLoginDetails(((string)DialogManager.inputCache[0]), ((string)DialogManager.inputCache[1]));
 
                 Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.LoginClientPacket), loginDetails);
-
-                Logs.Message($"[Rimworld Together] > Sending Login Request");
                 Network.listener.EnqueuePacket(packet);
 
             }
 
             else
             {
-                RT_Dialog_Error d1 = new RT_Dialog_Error("Login details are invalid! Please try again!",
+                RT_Dialog_OK d1 = new RT_Dialog_OK("ERROR", "Login details are invalid! Please try again!",
                     DialogManager.PopDialog);
 
                 DialogManager.PushNewDialog(d1);
@@ -222,23 +214,25 @@ namespace GameClient
 
             else
             {
-                RT_Dialog_Error d1 = new RT_Dialog_Error("Register details are invalid! Please try again!",
+                RT_Dialog_OK d1 = new RT_Dialog_OK("ERROR", "Register details are invalid! Please try again!",
                     DialogManager.PopDialog);
 
                 DialogManager.PushNewDialog(d1);
             }
         }
 
-
         //changes in a textField are check based on string length, but if the contents of a text field are replaced,
         //i.e. 1234 -> 1255 where 34 are instantly replace with 55
         //we can't tell anything has changed on length. This function will change the characters that have been repalced
-        public static string replaceNonCensoredSymbols(string recievingString, string giftingString, bool Censored, string censorSymbol)
+
+        public static string ReplaceNonCensoredSymbols(string recievingString, string giftingString, bool isCensored)
         {
             string StringA = recievingString; string currCharA;
             string StringB = giftingString; string currCharB;
+            string censorSymbol = "*";
             string returnString = "";
-            if (Censored)
+
+            if (isCensored)
             {
                 for (int i = 0; i < giftingString.Length; i++)
                 {
@@ -246,12 +240,12 @@ namespace GameClient
                     currCharB = StringB.Substring(0, 1);
                     if (StringA.Length > 0) StringA = StringA.Substring(1, StringA.Length - 1);
                     if (StringB.Length > 0) StringB = StringB.Substring(1, StringB.Length - 1);
-                    if (currCharB.ToString() == censorSymbol)
-                        returnString += currCharA;
-                    else
-                        returnString += currCharB;
+
+                    if (currCharB.ToString() == censorSymbol) returnString += currCharA;
+                    else returnString += currCharB;
                 }
             }
+
             else
             {
                 for (int i = 0; i < giftingString.Length; i++)
@@ -260,12 +254,12 @@ namespace GameClient
                     currCharB = StringB.Substring(0, 1);
                     if (StringA.Length > 0) StringA = StringA.Substring(1, StringA.Length - 1);
                     if (StringB.Length > 0) StringB = StringB.Substring(1, StringB.Length - 1);
-                    if (currCharA == currCharB)
-                        returnString += currCharA;
-                    else
-                        returnString += currCharB;
+
+                    if (currCharA == currCharB) returnString += currCharA;
+                    else returnString += currCharB;
                 }
             }
+
             return returnString;
         }
     }

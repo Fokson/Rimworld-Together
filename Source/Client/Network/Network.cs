@@ -1,4 +1,5 @@
 ﻿using Verse;
+using static Shared.CommonEnumerators;
 
 namespace GameClient
 {
@@ -30,14 +31,14 @@ namespace GameClient
                 Threader.GenerateThread(Threader.Mode.Health);
                 Threader.GenerateThread(Threader.Mode.KASender);
 
-                Logs.Message($"[Rimworld Together] > Connected to server");
+                Logger.WriteToConsole("Connected to server", LogMode.Message);
             }
 
             else
             {
                 DialogManager.PopDialog();
 
-                RT_Dialog_Error d1 = new RT_Dialog_Error("The server did not respond in time");
+                RT_Dialog_OK d1 = new RT_Dialog_OK("ERROR", "The server did not respond in time");
                 DialogManager.PushNewDialog(d1);
 
                 CleanValues();
@@ -71,13 +72,13 @@ namespace GameClient
         {
             listener.DestroyConnection();
 
-            Logs.Message($"[Rimworld Together] > Disconnected from server");
+            Logger.WriteToConsole("Disconnected from server", LogMode.Message);
 
             if (ClientValues.isQuiting) DisconnectionManager.QuitGame();
             else
             {
-                DialogManager.PushNewDialog(new RT_Dialog_Error("Connection to the server has been lost!",
-                    delegate { DialogManager.clearStack(); DisconnectionManager.DisconnectToMenu(); }));
+                DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "Connection to the server has been lost!",
+                    delegate { DialogManager.PopDialog(); DisconnectionManager.DisconnectToMenu(); }));
             }
         }
 

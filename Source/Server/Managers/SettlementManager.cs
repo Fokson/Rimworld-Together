@@ -1,4 +1,5 @@
 ﻿using Shared;
+using static Shared.CommonEnumerators;
 
 namespace GameServer
 {
@@ -22,7 +23,7 @@ namespace GameServer
 
         public static void AddSettlement(ServerClient client, SettlementDetailsJSON settlementDetailsJSON)
         {
-            if (CheckIfTileIsInUse(settlementDetailsJSON.tile)) ResponseShortcutManager.SendIllegalPacket(client);
+            if (CheckIfTileIsInUse(settlementDetailsJSON.tile)) ResponseShortcutManager.SendIllegalPacket(client, "A settlement was attempted to be added to a tile that already has a settlement");
             else
             {
                 settlementDetailsJSON.owner = client.username;
@@ -45,19 +46,19 @@ namespace GameServer
                     }
                 }
 
-                Logger.WriteToConsole($"[Added settlement] > {settlementFile.tile} > {client.username}", Logger.LogMode.Warning);
+                Logger.WriteToConsole($"[Added settlement] > {settlementFile.tile} > {client.username}", LogMode.Warning);
             }
         }
 
         public static void RemoveSettlement(ServerClient client, SettlementDetailsJSON settlementDetailsJSON, bool sendRemoval = true)
         {
-            if (!CheckIfTileIsInUse(settlementDetailsJSON.tile)) ResponseShortcutManager.SendIllegalPacket(client);
+            if (!CheckIfTileIsInUse(settlementDetailsJSON.tile)) ResponseShortcutManager.SendIllegalPacket(client, "Settlement was attempted to be removed, but the tile doesn't contain a settlement");
 
             SettlementFile settlementFile = GetSettlementFileFromTile(settlementDetailsJSON.tile);
 
             if (sendRemoval)
             {
-                if (settlementFile.owner != client.username) ResponseShortcutManager.SendIllegalPacket(client);
+                if (settlementFile.owner != client.username) ResponseShortcutManager.SendIllegalPacket(client, "Settlement was attempted to be removed by a player that does not own the settlement");
                 else
                 {
                     File.Delete(Path.Combine(Master.settlementsPath, settlementFile.tile + ".json"));
@@ -70,7 +71,7 @@ namespace GameServer
                         else cClient.listener.EnqueuePacket(rPacket);
                     }
 
-                    Logger.WriteToConsole($"[Remove settlement] > {settlementDetailsJSON.tile} > {client.username}", Logger.LogMode.Warning);
+                    Logger.WriteToConsole($"[Remove settlement] > {settlementDetailsJSON.tile} > {client.username}", LogMode.Warning);
                 }
             }
 
@@ -78,7 +79,7 @@ namespace GameServer
             {
                 File.Delete(Path.Combine(Master.settlementsPath, settlementFile.tile + ".json"));
 
-                Logger.WriteToConsole($"[Remove settlement] > {settlementFile.tile}", Logger.LogMode.Warning);
+                Logger.WriteToConsole($"[Remove settlement] > {settlementFile.tile}", LogMode.Warning);
             }
         }
 

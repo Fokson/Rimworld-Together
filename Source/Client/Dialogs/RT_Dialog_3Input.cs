@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using static Shared.CommonEnumerators;
 
 namespace GameClient
 {
@@ -25,9 +26,6 @@ namespace GameClient
         private string inputTwoLabel;
         private string inputThreeLabel;
 
-        private char censorSymbol = '*';
-        private string Str_censorSymbol = "";
-
         private bool inputOneCensored;
         private string inputOneDisplay;
 
@@ -39,7 +37,7 @@ namespace GameClient
 
         public List<string> inputResultList;
 
-        public virtual List<object> inputList
+        public virtual List<object> InputList
         {
             get
             {
@@ -55,7 +53,6 @@ namespace GameClient
             Action actionConfirm, Action actionCancel, bool inputOneCensored = false, bool inputTwoCensored = false,
             bool inputThreeCensored = false)
         {
-            this.Str_censorSymbol = censorSymbol.ToString();
             this.title = title;
             this.actionConfirm = actionConfirm;
             this.actionCancel = actionCancel;
@@ -80,7 +77,6 @@ namespace GameClient
             closeOnCancel = false;
         }
 
-        bool once = true;
         public override void DoWindowContents(Rect rect)
         {
             
@@ -110,7 +106,6 @@ namespace GameClient
             //draw confirm button
             if (Widgets.ButtonText(new Rect(new Vector2(rect.xMin, rect.yMax - buttonY), new Vector2(buttonX, buttonY)), "Confirm"))
             {
-                Logs.Message(inputResultList[0]);
                 CacheInputs();
                 if (actionConfirm != null) actionConfirm.Invoke();
                 else DialogManager.PopDialog();
@@ -148,7 +143,7 @@ namespace GameClient
 
             //if new input is detected, add it to the final input string
             if ((inputOneDisplay.Length > inputResultList[0].Length) && (inputOneDisplay.Length <= 32)) inputResultList[0] += inputOneDisplay.Substring(inputResultList[0].Length);
-            else if (inputDisplayBefore != inputOneDisplay) inputResultList[0] = DialogShortcuts.replaceNonCensoredSymbols(inputResultList[0],inputOneDisplay, inputOneCensored,Str_censorSymbol);
+            else if (inputDisplayBefore != inputOneDisplay) inputResultList[0] = DialogShortcuts.ReplaceNonCensoredSymbols(inputResultList[0], inputOneDisplay, inputOneCensored);
         }
 
         private void DrawInputTwo(float centeredX, float labelDif, float normalDif)
@@ -173,7 +168,7 @@ namespace GameClient
 
             //if new input is detected, add it to the final input string
             if ((inputTwoDisplay.Length > inputResultList[1].Length) && (inputTwoDisplay.Length <= 32)) inputResultList[1] += inputTwoDisplay.Substring(inputResultList[1].Length);
-            else if (inputDisplayBefore != inputTwoDisplay) inputResultList[1] = DialogShortcuts.replaceNonCensoredSymbols(inputResultList[1], inputTwoDisplay, inputTwoCensored, Str_censorSymbol);
+            else if (inputDisplayBefore != inputTwoDisplay) inputResultList[1] = DialogShortcuts.ReplaceNonCensoredSymbols(inputResultList[1], inputTwoDisplay, inputTwoCensored);
 
 
         }
@@ -200,43 +195,24 @@ namespace GameClient
 
             //if new input is detected, add it to the final input string
             if ((inputThreeDisplay.Length > inputResultList[2].Length) && (inputThreeDisplay.Length <= 32)) inputResultList[2] += inputThreeDisplay.Substring(inputResultList[2].Length);
-            else if (inputDisplayBefore != inputThreeDisplay) inputResultList[2] = DialogShortcuts.replaceNonCensoredSymbols(inputResultList[2], inputThreeDisplay, inputThreeCensored, Str_censorSymbol);
+            else if (inputDisplayBefore != inputThreeDisplay) inputResultList[2] = DialogShortcuts.ReplaceNonCensoredSymbols(inputResultList[2], inputThreeDisplay, inputThreeCensored);
 
 
         }
 
-        public virtual void CacheInputs()
-        {
-            DialogManager.inputCache = inputList;
-        }
+        public virtual void CacheInputs() { DialogManager.inputCache = InputList; }
 
         public virtual void SubstituteInputs(List<object> newInputs)
         {
-
-            //exception handling
-            if (newInputs.Count < 2)
+            //Exception handling
+            if (newInputs.Count != 3)
             {
-                Logs.Error("[RimWorld Together] > ERROR: newInputs in SubstituteInputs at RT_Dialog_1Input has too few elements; No changes will be made");
+                Logger.WriteToConsole("newInputs in SubstituteInputs at RT_Dialog_1Input has wrong number of elements; No changes will be made", LogMode.Error);
                 return;
             }
-            else if (newInputs.Count > 2)
-            {
-                Logs.Warning("[RimWorld Together] > WARNING: newInputs in SubstituteInputs at RT_Dialog_1Input has more elements than necessary, some elements will not be used ");
-            }
-
-            //for each value in inputResultList, set it to the corrosponding value in newInputs
-            for (int index = 0; index < inputResultList.Count; index++)
-            {
-                if (inputResultList[index].GetType() != newInputs[index].GetType())
-                {
-                    Logs.Error($"[RimWorld Together] > ERROR: newInputs in RT_Dialog_2Inputs.SubstituteInputs contained non-matching types at index {index}, No changes will be made");
-                    return;
-                }
-                inputResultList[index] = (string)newInputs[index];
-                
-            }
-            
+            inputResultList[0] = (string)newInputs[0];
+            inputResultList[1] = (string)newInputs[1];
+            inputResultList[2] = (string)newInputs[2];
         }
-
     }
 }

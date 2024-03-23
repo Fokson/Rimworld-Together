@@ -2,6 +2,7 @@
 using System;
 using System.Reflection;
 using Verse;
+using static Shared.CommonEnumerators;
 
 namespace GameClient
 {
@@ -13,7 +14,7 @@ namespace GameClient
 
         public static void HandlePacket(Packet packet)
         {
-            Logs.Message($"[Header] > {packet.header}",true);
+            Logger.WriteToConsole($"[Header] > {packet.header}", LogMode.Message);
 
             Action toDo = delegate
             {
@@ -119,13 +120,13 @@ namespace GameClient
         public static void IllegalActionPacket(Packet packet)
         {
             DialogManager.PopDialog();
-            DialogManager.PushNewDialog(new RT_Dialog_Error("Kicked for ilegal actions!"));
+            DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "Kicked for ilegal actions!"));
         }
 
         public static void UserUnavailablePacket(Packet packet)
         {
             DialogManager.PopDialog();
-            DialogManager.PushNewDialog(new RT_Dialog_Error("Player is not currently available!"));
+            DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "Player is not currently available!"));
         }
 
         public static void ServerValuesPacket(Packet packet)

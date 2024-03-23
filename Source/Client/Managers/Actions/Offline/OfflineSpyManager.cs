@@ -4,6 +4,7 @@ using Shared;
 using System;
 using System.Threading;
 using Verse;
+using static Shared.CommonEnumerators;
 
 
 namespace GameClient
@@ -41,7 +42,7 @@ namespace GameClient
             try { spyCost = int.Parse(serverOverallJSON.SpyCost); }
             catch
             {
-                Logs.Warning("Server didn't have spy cost set, defaulting to 0");
+                Logger.WriteToConsole("Server didn't have spy cost set, defaulting to 0", LogMode.Warning);
 
                 spyCost = 0;
             }
@@ -55,7 +56,7 @@ namespace GameClient
             {
                 if (!RimworldManager.CheckIfHasEnoughSilverInCaravan(spyCost))
                 {
-                    DialogManager.PushNewDialog(new RT_Dialog_Error("You do not have enough silver!"));
+                    DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "You do not have enough silver!"));
                 }
 
                 else
@@ -88,12 +89,9 @@ namespace GameClient
 
             Action r1 = delegate {
 
-                Logs.Message($"Rand stack value: {Rand.Value}");
-
-
                 DialogManager.PushNewDialog(new RT_Dialog_Wait("Loading Map...", delegate { 
                     PrepareMapForSpy(mapDetailsJSON);
-                    RT_Dialog_OK_Loop d1 = new RT_Dialog_OK_Loop(new string[]
+                    RT_Dialog_OK_Loop d1 = new RT_Dialog_OK_Loop("MESSAGE", new string[]
                     {
                     "You are now in spy mode!",
                     "Spy mode allows you to check out another player's base",
@@ -135,9 +133,9 @@ namespace GameClient
 
             
 
-            DialogManager.PushNewDialog(new RT_Dialog_Error("Player must not be connected!",
+            DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "Player must not be connected!",
                 delegate { 
-                DialogManager.PushNewDialog(new RT_Dialog_OK("Spent silver has been recovered",
+                DialogManager.PushNewDialog(new RT_Dialog_OK("MESSAGE", "Spent silver has been recovered",
                     DialogManager.clearStack)); 
                 }));
         }

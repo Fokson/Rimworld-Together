@@ -5,6 +5,7 @@ using RimWorld;
 using RimWorld.Planet;
 using Shared;
 using Verse;
+using static Shared.CommonEnumerators;
 
 
 namespace GameClient
@@ -52,7 +53,7 @@ namespace GameClient
 
             catch 
             {
-                Logs.Warning("Server didn't have site rewards set, defaulting to 0");
+                Logger.WriteToConsole("Server didn't have site rewards set, defaulting to 0", LogMode.Warning);
 
                 siteRewardCount = new int[9]
                 {
@@ -137,7 +138,7 @@ namespace GameClient
         private static void OnSiteAccept()
         {
             DialogManager.PopDialog();
-            DialogManager.PushNewDialog(new RT_Dialog_OK("The desired site has been built!", DialogManager.clearStack));
+            DialogManager.PushNewDialog(new RT_Dialog_OK("MESSAGE", "The desired site has been built!", DialogManager.clearStack));
 
             SaveManager.ForceSave();
         }
@@ -200,7 +201,7 @@ namespace GameClient
                 SaveManager.ForceSave();
             };
 
-            DialogManager.PushNewDialog(new RT_Dialog_OK("Worker have been recovered", r1));
+            DialogManager.PushNewDialog(new RT_Dialog_OK("MESSAGE", "Worker have been recovered", r1));
         }
 
         private static void PrepareSendPawnScreen()
@@ -268,7 +269,7 @@ namespace GameClient
 
         private static void OnWorkerError()
         {
-            DialogManager.PushNewDialog(new RT_Dialog_Error("The site has a worker inside!"));
+            DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "The site has a worker inside!"));
         }
 
         private static void ReceiveSitesRewards(SiteDetailsJSON siteDetailsJSON)
@@ -343,7 +344,7 @@ namespace GameClient
 
             catch 
             {
-                Logs.Warning("Server didn't have personal site prices set, defaulting to 0");
+                Logger.WriteToConsole("Server didn't have personal site prices set, defaulting to 0", LogMode.Warning);
 
                 sitePrices = new int[9]
                 {
@@ -367,7 +368,7 @@ namespace GameClient
 
             if (!RimworldManager.CheckIfHasEnoughSilverInCaravan(sitePrices[(int)DialogManager.inputReserve[0]]))
             {
-                DialogManager.PushNewDialog(new RT_Dialog_Error("You do not have enough silver!", DialogManager.clearStack));
+                DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "You do not have enough silver!", DialogManager.clearStack));
             }
             else
             {
@@ -386,7 +387,6 @@ namespace GameClient
                 DialogManager.PushNewDialog(new RT_Dialog_Wait("Waiting for building"));
             }
 
-            Logs.Message("point 4");
         }
     }
 
@@ -414,7 +414,7 @@ namespace GameClient
 
             catch
             {
-                Logs.Warning("Server didn't have faction site prices set, defaulting to 0");
+                Logger.WriteToConsole("Server didn't have faction site prices set, defaulting to 0", LogMode.Warning);
 
                 sitePrices = new int[9]
                 {
@@ -439,7 +439,7 @@ namespace GameClient
 
             if (!RimworldManager.CheckIfHasEnoughSilverInCaravan(sitePrices[(int)DialogManager.inputReserve[0]]))
             {
-                DialogManager.PushNewDialog(new RT_Dialog_Error("You do not have enough silver!"));
+                DialogManager.PushNewDialog(new RT_Dialog_OK("ERROR", "You do not have enough silver!"));
             }
 
             else

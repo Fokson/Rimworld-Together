@@ -126,17 +126,16 @@ namespace GameClient
                 worldValuesFile.temperature = ((int)Find.World.info.overallTemperature).ToString(); ;
                 worldValuesFile.population = ((int)Find.World.info.overallPopulation).ToString();
                 worldValuesFile.pollution = Find.World.info.pollution.ToString();
-
                 foreach (Faction faction in Find.World.factionManager.AllFactions)
                 {
                     if (faction.def == Faction.OfPlayer.def) continue;
-                    else worldValuesFile.factions.Add(faction.def.defName);
+                    else worldValuesFile.factions[faction.def.fixedName] = Serializer.ConvertObjectToBytes(FactionScribeManager.factionToFactionDetails(faction.def));
                 }
 
                 WorldDetailsJSON worldDetailsJSON = new WorldDetailsJSON();
                 XmlParser.GetWorldXmlData(worldDetailsJSON);
 
-                //Add all the deflates from worldDEtailsJSON to worldValuesFile
+                //Add all the deflates from worldDetailsJSON to worldValuesFile
                 foreach (string deflateLabel in worldDetailsJSON.deflateDictionary.Keys)
                 {
                     worldValuesFile.deflateDictionary.Add(deflateLabel, worldDetailsJSON.deflateDictionary[deflateLabel]);

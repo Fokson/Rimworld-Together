@@ -45,7 +45,11 @@ namespace GameServer
 
         public static void SendWorldFile(ServerClient client)
         {
-            Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.WorldPacket), Master.worldValues);
+
+            WorldDetailsJSON worldDetailsJSON = Master.worldValues;
+            worldDetailsJSON.worldStepMode = ((int)CommonEnumerators.WorldStepMode.Existing).ToString();
+
+            Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.WorldPacket), worldDetailsJSON);
             client.listener.EnqueuePacket(packet);
         }
 

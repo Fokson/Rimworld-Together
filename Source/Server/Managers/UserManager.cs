@@ -103,11 +103,13 @@ namespace GameServer
                 if (existingUser.username.ToLower() == details.username.ToLower())
                 {
                     if (mode == LoginMode.Register) SendLoginResponse(client, LoginResponse.RegisterInUse);
+                    client.listener.disconnectFlag = true;
                     return true;
                 }
             }
 
             if (mode == LoginMode.Login) SendLoginResponse(client, LoginResponse.InvalidLogin);
+            client.listener.disconnectFlag = true;
             return false;
         }
 
@@ -126,6 +128,7 @@ namespace GameServer
             }
 
             SendLoginResponse(client, LoginResponse.InvalidLogin);
+            client.listener.disconnectFlag = true;
             return false;
         }
 
@@ -135,6 +138,7 @@ namespace GameServer
             else
             {
                 SendLoginResponse(client, LoginResponse.BannedLogin);
+                client.listener.disconnectFlag = true;
                 return true;
             }
         }
@@ -170,8 +174,8 @@ namespace GameServer
             if (isValid) return true;
             else
             {
-                if (mode == LoginMode.Login) SendLoginResponse(client, LoginResponse.InvalidLogin);
-                else if (mode == LoginMode.Register) SendLoginResponse(client, LoginResponse.RegisterError);
+                if (mode == LoginMode.Login) { SendLoginResponse(client, LoginResponse.InvalidLogin); client.listener.disconnectFlag = true; }
+                else if (mode == LoginMode.Register) { SendLoginResponse(client, LoginResponse.RegisterError); client.listener.disconnectFlag = true; }
                 return false;
             }
         }
@@ -187,7 +191,6 @@ namespace GameServer
 
             Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.LoginResponsePacket), loginDetailsJSON);
             client.listener.EnqueuePacket(packet);
-            client.listener.disconnectFlag = true;
         }
 
         public static bool CheckWhitelist(ServerClient client)
@@ -202,6 +205,7 @@ namespace GameServer
             }
 
             SendLoginResponse(client, LoginResponse.Whitelist);
+            client.listener.disconnectFlag = true;
             return false;
         }
 
@@ -212,6 +216,7 @@ namespace GameServer
             {
                 Logger.WriteToConsole($"[Version Mismatch] > {client.username}", LogMode.Warning);
                 SendLoginResponse(client, LoginResponse.WrongVersion);
+                client.listener.disconnectFlag = true;
                 return false;
             }
         }

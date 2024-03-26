@@ -151,8 +151,8 @@ namespace GameClient
         {
             try
             {
-                Logs.Message($"Incoming:\n{ClientValues.incomingManifest.itemDetailsJSONS.Count}");
-                Logs.Message($"Outgoing:\n{ClientValues.outgoingManifest.itemDetailsJSONS.Count}");
+                Logger.WriteToConsole($"Incoming:\n{ClientValues.incomingManifest.itemDetailsJSONS.Count}",LogMode.Message);
+                Logger.WriteToConsole($"Outgoing:\n{ClientValues.outgoingManifest.itemDetailsJSONS.Count}",LogMode.Message);
                 Thing[] toRecover = TransferManagerHelper.GetAllTransferedItems(ClientValues.outgoingManifest);
 
                 if (transferLocation == TransferLocation.Caravan)

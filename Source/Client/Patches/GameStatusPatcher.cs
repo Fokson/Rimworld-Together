@@ -29,7 +29,7 @@ namespace GameClient
 
                     if (ClientValues.requireSaveManipulation)
                     {
-                        RT_Dialog_OK d1 = new RT_Dialog_OK("The world will be reloaded one time to ensure Synchronization",
+                        RT_Dialog_OK d1 = new RT_Dialog_OK("MESSAGE","The world will be reloaded one time to ensure Synchronization",
                             delegate { WorldGeneratorManager.GetWorldFromServer(); });
 
                         DialogManager.PushNewDialog(d1);

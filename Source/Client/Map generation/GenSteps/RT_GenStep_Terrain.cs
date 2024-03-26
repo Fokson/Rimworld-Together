@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
+using static Shared.CommonEnumerators;
 
 namespace GameClient
 {
@@ -60,8 +61,8 @@ namespace GameClient
                     }
                     catch (Exception e) {
 
-                        Logs.Warning($"Failed to set terrain at {vectorToCheck}");
-                        Logs.Error(e.ToString(), true, true);
+                        Logger.WriteToConsole($"Failed to set terrain at {vectorToCheck}",LogMode.Warning);
+                        Logger.WriteToConsole(e.ToString(),LogMode.Error);
                     }
 
                     try

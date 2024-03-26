@@ -112,6 +112,9 @@ namespace GameServer
             }
             catch { }
 
+            if (disconnectFlag) Logger.WriteToConsole($"[Connection] > closing connection with {targetClient.username}");
+            else Logger.WriteToConsole($"[Connection] > Lost connect with {targetClient.username}");
+
             Thread.Sleep(1000);
 
             Network.KickClient(targetClient);

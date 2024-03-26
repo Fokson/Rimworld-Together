@@ -26,6 +26,7 @@ namespace GameClient
             //Remove all server connection windows
             DialogManager.clearStack();
 
+            //register user dialog
             RT_Dialog_3Input a1 = new RT_Dialog_3Input(
                 "New User",
                 "Username",
@@ -35,6 +36,7 @@ namespace GameClient
                 DialogManager.PopDialog ,
                 false, true, true);
 
+            //Log in Dialog
             RT_Dialog_2Input a2 = new RT_Dialog_2Input(
                 "Existing User",
                 "Username",
@@ -43,6 +45,7 @@ namespace GameClient
                 DialogManager.PopDialog,
                 false, true);
 
+            //Login or Register dialog
             RT_Dialog_2Button d1 = new RT_Dialog_2Button(
                 "Login Select",
                 "Choose your login type",

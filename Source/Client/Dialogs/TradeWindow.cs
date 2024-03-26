@@ -9,6 +9,8 @@ using System.Threading;
 using RimWorld;
 using UnityEngine;
 using Verse;
+
+// TODO--integrate this updated trading window with the mod
 /*
 namespace GameClient
 {

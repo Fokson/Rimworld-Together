@@ -3,11 +3,8 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Xml;
-using System.Xml.Serialization;
-using UnityEngine.ParticleSystemJobs;
-using Verse;
+using static Shared.CommonEnumerators;
 
 namespace GameClient
 {
@@ -27,11 +24,13 @@ namespace GameClient
             XmlNode worldNode = GetChildNodeInNode(gameNode, "world");
             XmlNode gridNode = GetChildNodeInNode(worldNode, "grid");
 
+
+
             foreach (XmlNode deflateNode in gridNode.ChildNodes)
             {
                 worldDetailsJSON.deflateDictionary.Add(deflateNode.Name,deflateNode.InnerText);
             }
-            
+
             XmlNode worldObjectsNode = GetChildNodeInNode(worldNode, "worldObjects");
             worldDetailsJSON.WorldObjects  = worldObjectsNode.InnerXml;
             return worldDetailsJSON;
@@ -55,13 +54,12 @@ namespace GameClient
 
             Dictionary<string, string> worldDeflates = worldDetailsJSON.deflateDictionary;
 
-            Logs.Message("Startin for");
             //set each deflate in the player's save to the deflate from the server
             foreach (string deflateLabel in worldDeflates.Keys)
             {
-                Logs.Message($"Setting deflate for {deflateLabel}");
                 XmlNode deflateNode = gridNode[deflateLabel];
-                Logs.Message($"Resulting deflate is {((deflateNode == null) ? "null":"copied")}");
+                Logger.WriteToConsole($"{((deflateNode != null) ? ($"deflate node {deflateLabel} exists"): ($"deflate node {deflateLabel} was not found"))})", LogMode.Message);
+
                 //if the player does not have that label, don't attempt to add it
                 if (deflateNode != null)
                 {

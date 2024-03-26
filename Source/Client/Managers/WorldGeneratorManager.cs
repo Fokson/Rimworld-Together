@@ -6,6 +6,7 @@ using RimWorld.Planet;
 using Shared;
 using Verse;
 using Verse.Profile;
+using static Shared.CommonEnumerators;
 
 namespace GameClient
 {
@@ -54,13 +55,36 @@ namespace GameClient
 
             factions = new List<FactionDef>();
             FactionDef factionToAdd;
-            foreach (string str in worldDetailsJSON.factions)
+            Dictionary<string, FactionDetails> factionDictionary = new Dictionary<string, FactionDetails>();
+
+            //Convert the string-string dictionary into a string-FactionDetails dictionary
+            foreach (string str in worldDetailsJSON.factions.Keys)
             {
-                factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(fetch => fetch.defName == str);
+                factionDictionary[str] = (FactionDetails)Serializer.ConvertBytesToObject(worldDetailsJSON.factions[str]);
+            }
+
+            //for each faction in worldDetails, try to add it to the client's world
+            foreach (string factionName in factionDictionary.Keys)
+            {
+                factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(fetch => fetch.defName == factionName);
+
+                //try to find a faction with similar details
                 if (factionToAdd == null)
                 {
-                    factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(fetch => fetch.defName == "OutlanderCivil");
+                    factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(
+                        fetch => (fetch.permanentEnemy == factionDictionary[factionName].permanentEnemy) &&
+                                ((byte)fetch.techLevel == factionDictionary[factionName].techLevel));// &&
+                                //(fetch.hidden == factionDictionary[factionName].hidden));
+
+                    //if a faction cannot be found with similar details, then make a new faction
+                    if (factionToAdd == null)
+                    {
+                        factionToAdd = FactionScribeManager.factionDetailsToFaction(factionDictionary[factionName]);
+                    }
+
+
                 }
+                factionToAdd.fixedName = factionDictionary[factionName].fixedName;
                 factions.Add(factionToAdd);
             }
 
@@ -89,7 +113,7 @@ namespace GameClient
         {
             Rand.PushState(0);
             Current.CreatingWorld = new World();
-            Logs.Message($"Generating a world using the seed : {seedString}");
+            Logger.WriteToConsole($"Generating a world using the seed : {seedString}",LogMode.Message);
             Current.CreatingWorld.info.seedString = seedString;
             Current.CreatingWorld.info.persistentRandomValue = persistentRandomValue;
             Current.CreatingWorld.info.planetCoverage = planetCoverage;
@@ -105,10 +129,10 @@ namespace GameClient
 
             WorldGenerationData.initializeGenerationDefs();
             WorldGenStepDef[] worldGenSteps = WorldGenerationData.WorldSyncSteps;
-            Logs.Message($"Steps count : {GenStepsInOrder.Count()}");
+            Logger.WriteToConsole($"Steps count : {GenStepsInOrder.Count()}",LogMode.Message);
 
             foreach (WorldGenStepDef step in GenStepsInOrder){
-                Logs.Message($"step : {step.ToString()}");
+                Logger.WriteToConsole($"step : {step.ToString()}",LogMode.Message);
             }
             for (int i = 0; i < worldGenSteps.Count(); i++)
             {
@@ -135,14 +159,16 @@ namespace GameClient
             worldDetailsJSON.temperature = ((int)temperature).ToString();
             worldDetailsJSON.population = ((int)population).ToString();
             worldDetailsJSON.pollution = pollution.ToString();
-           
-            foreach(FactionDef faction in factions)
+
+
+            foreach (FactionDef factionDef in factions)
             {
-                worldDetailsJSON.factions.Add(faction.defName);
+                FactionDetails factionDetails = FactionScribeManager.factionToFactionDetails(factionDef);
+                worldDetailsJSON.factions[factionDef.defName] = Serializer.ConvertObjectToBytes(factionDetails);
             }
 
             worldDetailsJSON = XmlParser.GetWorldXmlData(worldDetailsJSON);
-            Logs.Message(worldDetailsJSON.deflateDictionary[worldDetailsJSON.deflateDictionary.Keys.Last()]);
+            Logger.WriteToConsole(worldDetailsJSON.deflateDictionary[worldDetailsJSON.deflateDictionary.Keys.Last()],LogMode.Message);
             Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.WorldPacket), worldDetailsJSON);
             Network.listener.EnqueuePacket(packet);
         }

@@ -371,7 +371,7 @@ namespace GameClient
                 }
 
             }
-            catch { Logs.Warning($"Failed to set biological details in human {humanDetailsJSON.name}"); }
+            catch { Logger.WriteToConsole($"Failed to set biological details in human {humanDetailsJSON.name}",LogMode.Warning); }
         }
 
         private static void SetPawnColors(Pawn pawn, HumanDetailsJSON humanDetailsJSON) 
@@ -476,14 +476,14 @@ namespace GameClient
                         pawn.genes.SetXenotype(DefDatabase<XenotypeDef>.AllDefs.ToList().Find(x => x.defName == humanDetailsJSON.xenotypeDefName));
                     }
 
-                if (humanDetailsJSON.customXenotypeName != "null")
-                {
-                    pawn.genes.xenotypeName = humanDetailsJSON.customXenotypeName;
+                    if (humanDetailsJSON.customXenotypeName != "null")
+                    {
+                        pawn.genes.xenotypeName = humanDetailsJSON.customXenotypeName;
+                    }
                 }
+                catch { Logger.WriteToConsole($"Failed to set xenotypes in human {humanDetailsJSON.name}", LogMode.Warning); }
             }
-            catch { Logger.WriteToConsole($"Failed to set xenotypes in human {humanDetailsJSON.name}", LogMode.Warning); }
         }
-
         private static void SetPawnXenogenes(Pawn pawn, HumanDetailsJSON humanDetailsJSON)
         {
             if (ModLister.BiotechInstalled)
@@ -511,7 +511,7 @@ namespace GameClient
             if (ModLister.BiotechInstalled)
             {
                 try { pawn.genes.Endogenes.Clear(); }
-                catch { Logs.Warning($"Failed to clear endogenes for human {humanDetailsJSON.name}"); }
+                catch { Logger.WriteToConsole($"Failed to clear endogenes for human {humanDetailsJSON.name}",LogMode.Warning); }
 
                 if (humanDetailsJSON.endogeneDefNames.Count() > 0)
                 {
@@ -1236,5 +1236,54 @@ namespace GameClient
             return toReturn;
         }
 
+    }
+
+    //class that handles transformation of factions
+
+    public static class FactionScribeManager
+    {
+        public static FactionDetails factionToFactionDetails(FactionDef faction)
+        {
+            FactionDetails factionDetails = new FactionDetails();
+            factionDetails.defName = faction.defName;
+            factionDetails.fixedName = faction.fixedName;
+            factionDetails.autoFlee = faction.autoFlee;
+            factionDetails.canSiege = faction.canSiege;
+            factionDetails.canStageAttacks = faction.canStageAttacks;
+            factionDetails.canUseAvoidGrid = faction.canUseAvoidGrid;
+            factionDetails.earliestRaidDays = faction.earliestRaidDays;
+            factionDetails.rescueesCanJoin = faction.rescueesCanJoin;
+            factionDetails.naturalEnemy = faction.naturalEnemy;
+            factionDetails.permanentEnemy = faction.permanentEnemy;
+            factionDetails.permanentEnemyToEveryoneExceptPlayer = faction.permanentEnemyToEveryoneExceptPlayer;
+            factionDetails.techLevel = (byte)faction.techLevel;
+            factionDetails.factionIconPath = faction.factionIconPath;
+            factionDetails.settlementTexturePath = faction.settlementTexturePath;
+            factionDetails.hidden = faction.hidden;
+
+            return factionDetails;
+        }
+
+        public static FactionDef factionDetailsToFaction(FactionDetails factionDetails)
+        {
+            FactionDef factionDef = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(
+                fetch => (fetch.permanentEnemy == factionDetails.permanentEnemy) && 
+                         (fetch.naturalEnemy == factionDetails.naturalEnemy));
+            factionDef.defName = factionDetails.defName;
+            factionDef.fixedName = factionDetails.fixedName;
+            factionDef.autoFlee = factionDetails.autoFlee;
+            factionDef.canSiege = factionDetails.canSiege;
+            factionDef.canStageAttacks = factionDetails.canStageAttacks;
+            factionDef.canUseAvoidGrid = factionDetails.canUseAvoidGrid;
+            factionDef.earliestRaidDays = factionDetails.earliestRaidDays;
+            factionDef.rescueesCanJoin = factionDetails.rescueesCanJoin;
+            factionDef.permanentEnemy = factionDetails.permanentEnemy;
+            factionDef.permanentEnemyToEveryoneExceptPlayer = factionDetails.permanentEnemyToEveryoneExceptPlayer;
+            factionDef.techLevel = (TechLevel)factionDetails.techLevel;
+            factionDef.factionIconPath = factionDetails.factionIconPath;
+            factionDef.hidden = factionDetails.hidden;
+
+            return factionDef;
+        }
     }
 }

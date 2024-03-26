@@ -55,6 +55,7 @@ namespace GameServer
                 if (connectedClients.ToArray().Count() >= int.Parse(Master.serverConfig.MaxPlayers))
                 {
                     UserManager.SendLoginResponse(newServerClient, CommonEnumerators.LoginResponse.ServerFull);
+                    newServerClient.listener.disconnectFlag = true;
                     Logger.WriteToConsole($"[Warning] > Server Full", LogMode.Warning);
                 }
 

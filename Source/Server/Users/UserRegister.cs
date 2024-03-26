@@ -1,4 +1,5 @@
 ﻿using Shared;
+using System.Net.Sockets;
 
 namespace GameServer
 {
@@ -26,13 +27,14 @@ namespace GameServer
             {
                 UserManager.SaveUserFile(client, userFile);
                 UserManager.SendLoginResponse(client, CommonEnumerators.LoginResponse.RegisterSuccess);
-
+                client.listener.disconnectFlag = false;
                 Logger.WriteToConsole($"[Registered] > {client.username}");
             }
 
             catch
             {
                 UserManager.SendLoginResponse(client, CommonEnumerators.LoginResponse.RegisterError);
+                client.listener.disconnectFlag = true;
                 return;
             }
         }

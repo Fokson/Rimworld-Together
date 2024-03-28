@@ -27,7 +27,6 @@ namespace GameServer
             {
                 UserManager.SaveUserFile(client, userFile);
                 UserManager.SendLoginResponse(client, CommonEnumerators.LoginResponse.RegisterSuccess);
-                client.listener.disconnectFlag = false;
                 Logger.WriteToConsole($"[Registered] > {client.username}");
             }
 

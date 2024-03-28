@@ -52,7 +52,7 @@ namespace GameServer
 
         public static void RemoveSettlement(ServerClient client, SettlementDetailsJSON settlementDetailsJSON, bool sendRemoval = true)
         {
-            if (!CheckIfTileIsInUse(settlementDetailsJSON.tile)) ResponseShortcutManager.SendIllegalPacket(client, "Settlement was attempted to be removed, but the tile doesn't contain a settlement");
+            if (!CheckIfTileIsInUse(settlementDetailsJSON.tile)) ResponseShortcutManager.SendIllegalPacket(client, "Settlement at tile attempted to be removed, but the tile doesn't contain a settlement");
 
             SettlementFile settlementFile = GetSettlementFileFromTile(settlementDetailsJSON.tile);
 

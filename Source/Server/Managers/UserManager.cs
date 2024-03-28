@@ -102,14 +102,20 @@ namespace GameServer
                 UserFile existingUser = Serializer.SerializeFromFile<UserFile>(user);
                 if (existingUser.username.ToLower() == details.username.ToLower())
                 {
-                    if (mode == LoginMode.Register) SendLoginResponse(client, LoginResponse.RegisterInUse);
-                    client.listener.disconnectFlag = true;
+                    if (mode == LoginMode.Register)
+                    {
+                        SendLoginResponse(client, LoginResponse.RegisterInUse);
+                        client.listener.disconnectFlag = true;
+                    }
                     return true;
                 }
             }
 
-            if (mode == LoginMode.Login) SendLoginResponse(client, LoginResponse.InvalidLogin);
-            client.listener.disconnectFlag = true;
+            if (mode == LoginMode.Login)
+            {
+                SendLoginResponse(client, LoginResponse.InvalidLogin);
+                client.listener.disconnectFlag = true;
+            }
             return false;
         }
 

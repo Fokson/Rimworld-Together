@@ -23,8 +23,6 @@ namespace GameClient
 
         public static void ShowLoginOrRegisterDialogs()
         {
-            //Remove all server connection windows
-            DialogManager.clearStack();
 
             //register user dialog
             RT_Dialog_3Input a1 = new RT_Dialog_3Input(
@@ -161,10 +159,15 @@ namespace GameClient
 
         public static void ParseLoginUser()
         {
+            DialogManager.setInputReserve();
             bool isValid = true;
-            if (string.IsNullOrWhiteSpace(((string)DialogManager.inputCache[0]))) isValid = false;
-            if (((string)DialogManager.inputCache[0]).Any(Char.IsWhiteSpace)) isValid = false;
-            if (string.IsNullOrWhiteSpace(((string)DialogManager.inputCache[1]))) isValid = false;
+            Logger.WriteToConsole("checking nullity", CommonEnumerators.LogMode.Message);
+            if (string.IsNullOrWhiteSpace(((string)DialogManager.inputReserve[0]))) isValid = false;
+            Logger.WriteToConsole("checking any space", CommonEnumerators.LogMode.Message);
+            if (((string)DialogManager.inputReserve[0]).Any(Char.IsWhiteSpace)) isValid = false;
+            Logger.WriteToConsole("checking for nullity",CommonEnumerators.LogMode.Message);
+            if (string.IsNullOrWhiteSpace(((string)DialogManager.inputReserve[1]))) isValid = false;
+            Logger.WriteToConsole($"past checking { ((isValid) ? ("Is true") : ("is false"))}", CommonEnumerators.LogMode.Message);
 
             if (isValid)
             {
@@ -176,7 +179,7 @@ namespace GameClient
                 loginDetails.runningMods = ModManager.GetRunningModList().ToList();
 
                 ChatManager.username = loginDetails.username;
-                PreferenceManager.SaveLoginDetails(((string)DialogManager.inputCache[0]), ((string)DialogManager.inputCache[1]));
+                PreferenceManager.SaveLoginDetails(((string)DialogManager.inputReserve[0]), ((string)DialogManager.inputReserve[1]));
 
                 Packet packet = Packet.CreatePacketFromJSON(nameof(PacketHandler.LoginClientPacket), loginDetails);
                 Network.listener.EnqueuePacket(packet);

@@ -24,7 +24,14 @@ namespace GameServer
         public Queue<Packet> dataQueue = new Queue<Packet>();
 
         //Useful variables to handle connection status
-        public bool disconnectFlag;
+        public bool disconnectFlag {
+            get {  return _disFlag; }
+            set {
+                _disFlag = value;
+                if (_disFlag) Logger.WriteToConsole("but why here");
+            }
+        }
+        private bool _disFlag;
         public bool KAFlag;
 
         //Reference to the ServerClient instance of this listener
@@ -46,6 +53,7 @@ namespace GameServer
         {
             if (disconnectFlag) return;
             else dataQueue.Enqueue(packet);
+            Logger.WriteToConsole("queued data");
         }
 
         //Runs in a separate thread and sends all queued packets through the connection

@@ -42,6 +42,7 @@ namespace GameServer
 
             ChatManager.SendMessagesToClient(client, ChatManager.defaultJoinMessages);
             Logger.WriteToConsole($"[World] > World {(WorldManager.CheckIfWorldExists() ? "does" : "does not")} exist");
+            client.listener.disconnectFlag = false;
             if (WorldManager.CheckIfWorldExists())
             {
                 if (SaveManager.CheckIfUserHasSave(client)) SaveManager.SendSavePartToClient(client);
@@ -61,6 +62,7 @@ namespace GameServer
                     {
                         UserManager.SendLoginResponse(cClient, CommonEnumerators.LoginResponse.ExtraLogin);
                         cClient.listener.disconnectFlag = true;
+                        Logger.WriteToConsole("????");
                     }
                 }
             }

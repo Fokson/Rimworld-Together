@@ -56,14 +56,16 @@ namespace GameClient
             factions = new List<FactionDef>();
             FactionDef factionToAdd;
             Dictionary<string, FactionDetails> factionDictionary = new Dictionary<string, FactionDetails>();
-
-            //Convert the string-string dictionary into a string-FactionDetails dictionary
+            Dictionary<string, byte[]> cacheDetailsFactionDict = new Dictionary<string, byte[]>();
+            //Convert the string-byte[] dictionary into a string-FactionDetails dictionary
             foreach (string str in worldDetailsJSON.factions.Keys)
             {
                 factionDictionary[str] = (FactionDetails)Serializer.ConvertBytesToObject(worldDetailsJSON.factions[str]);
             }
 
             //for each faction in worldDetails, try to add it to the client's world
+
+            FactionDetails factionDetails = new FactionDetails();
             foreach (string factionName in factionDictionary.Keys)
             {
                 factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(fetch => fetch.defName == factionName);
@@ -73,8 +75,8 @@ namespace GameClient
                 {
                     factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(
                         fetch => (fetch.permanentEnemy == factionDictionary[factionName].permanentEnemy) &&
-                                ((byte)fetch.techLevel == factionDictionary[factionName].techLevel));// &&
-                                //(fetch.hidden == factionDictionary[factionName].hidden));
+                                ((byte)fetch.techLevel == factionDictionary[factionName].techLevel) &&
+                                (fetch.hidden == factionDictionary[factionName].hidden));
 
                     //if a faction cannot be found with similar details, then make a new faction
                     if (factionToAdd == null)
@@ -86,8 +88,18 @@ namespace GameClient
                 }
                 factionToAdd.fixedName = factionDictionary[factionName].fixedName;
                 factions.Add(factionToAdd);
+                factionDetails = FactionScribeManager.factionToFactionDetails(factionToAdd);
+                cacheDetailsFactionDict[factionName] = Serializer.ConvertObjectToBytes(factionDetails);
             }
 
+           
+
+            //Convert the string-string dictionary into a string-FactionDetails dictionary
+            foreach (string str in worldDetailsJSON.factions.Keys)
+            {
+            }
+
+            worldDetailsJSON.factions = cacheDetailsFactionDict;
             cachedWorldDetails = worldDetailsJSON;
         }
 

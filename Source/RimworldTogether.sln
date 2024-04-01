@@ -39,6 +39,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Shared\Shared.projitems*{30dc9f13-de2c-4de7-a38a-c660f9de24af}*SharedItemsImports = 5
 		Shared\Shared.projitems*{4acc93d1-3675-49d8-96a3-7d0b6c6b6427}*SharedItemsImports = 5
+		Shared\Shared.projitems*{4e80a33c-53ab-4e44-9b7f-224c2b543e0f}*SharedItemsImports = 5
 		Shared\Shared.projitems*{62154254-67b2-45ca-9888-5d96a470d929}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

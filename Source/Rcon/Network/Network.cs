@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace GameServer
+namespace Rcon
 {
     //Main class that is used to handle the connection with the clients
 
@@ -37,11 +37,7 @@ namespace GameServer
 
         private static void ListenForIncomingUsers()
         {
-            //Wait for a user to try and connect
             TcpClient newTCP = connection.AcceptTcpClient();
-
-
-            //Initialize everything needed when a user tries to connect
             ServerClient newServerClient = new ServerClient(newTCP);
             Listener newListener = new Listener(newServerClient, newTCP);
             newServerClient.listener = newListener;

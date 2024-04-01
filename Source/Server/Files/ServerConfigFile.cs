@@ -16,5 +16,9 @@
         public string MaxTimeoutInMS = "5000";
 
         public bool verboseLogs = false;
+
+        public bool allowRconConnections = false;
+
+        public string RconPassword = "";
     }
 }

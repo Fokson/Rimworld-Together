@@ -14,7 +14,7 @@ namespace Rcon
 
         //TCP listener that will handle the connection with the clients, and list of currently connected clients
         private static TcpListener connection;
-        public static List<ServerClient> connectedClients = new List<ServerClient>();
+        public static List<RconClient> connectedClients = new List<RconClient>();
 
         //Entry point function of the network class
 
@@ -38,7 +38,7 @@ namespace Rcon
         private static void ListenForIncomingUsers()
         {
             TcpClient newTCP = connection.AcceptTcpClient();
-            ServerClient newServerClient = new ServerClient(newTCP);
+            RconClient newServerClient = new RconClient(newTCP);
             Listener newListener = new Listener(newServerClient, newTCP);
             newServerClient.listener = newListener;
 
@@ -69,7 +69,7 @@ namespace Rcon
 
         //Kicks specified client from the server
 
-        public static void KickClient(ServerClient client)
+        public static void KickClient(RconClient client)
         {
             try
             {

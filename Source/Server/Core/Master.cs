@@ -56,6 +56,7 @@ namespace GameServer
             ChangeTitle();
 
             Threader.GenerateServerThread(Threader.ServerMode.Start);
+            Threader.GenerateServerThread(Threader.ServerMode.RconStart);
             Threader.GenerateServerThread(Threader.ServerMode.Console);
 
             while (true) Thread.Sleep(1);

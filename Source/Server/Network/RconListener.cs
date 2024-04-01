@@ -1,11 +1,11 @@
 ﻿using Shared;
 using System.Net.Sockets;
 
-namespace Rcon
+namespace GameServer
 {
     //Class that handles all incoming and outgoing packet instructions
 
-    public class Listener
+    public class RconListener
     {
         //TCP variables needed for the listener to comunicate
         public TcpClient connection;
@@ -29,8 +29,8 @@ namespace Rcon
         //Reference to the ServerClient instance of this listener
         private RconClient targetClient;
 
-        public Listener(RconClient clientToUse, TcpClient connection) 
-        { 
+        public RconListener(RconClient clientToUse, TcpClient connection)
+        {
             targetClient = clientToUse;
 
             this.connection = connection;
@@ -84,7 +84,31 @@ namespace Rcon
                     if (string.IsNullOrEmpty(data)) continue;
 
                     Packet receivedPacket = Serializer.SerializeStringToPacket(data);
-                    PacketHandler.HandlePacket(targetClient, receivedPacket);
+                    RconPacketHandler.HandlePacket(targetClient, receivedPacket);
+                }
+            }
+
+            catch (Exception e)
+            {
+                if (Master.serverConfig.verboseLogs) Logger.WriteToConsole(e.ToString(), Logger.LogMode.Warning);
+
+                disconnectFlag = true;
+            }
+        }
+
+        public void RconListen()
+        {
+            try
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+
+                    string data = streamReader.ReadLine();
+                    if (string.IsNullOrEmpty(data)) continue;
+
+                    Packet receivedPacket = Serializer.SerializeStringToPacket(data);
+                    RconPacketHandler.HandlePacket(targetClient, receivedPacket);
                 }
             }
 
@@ -113,7 +137,7 @@ namespace Rcon
 
             Thread.Sleep(1000);
 
-            Network.KickClient(targetClient);
+            Network.KickRcon(targetClient);
         }
 
         //Runs in a separate thread and checks if the connection is still alive
@@ -126,7 +150,7 @@ namespace Rcon
             {
                 while (true)
                 {
-                    Thread.Sleep(5000);
+                    Thread.Sleep(int.Parse(Master.serverConfig.MaxTimeoutInMS));
 
                     if (KAFlag) KAFlag = false;
                     else break;

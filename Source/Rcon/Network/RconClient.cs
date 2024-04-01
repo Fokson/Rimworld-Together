@@ -5,7 +5,7 @@ namespace Rcon
 {
     //Class object for the client connecting into the server. Contains all important data about it
 
-    public class ServerClient
+    public class RconClient
     {
         //Reference to the listener instance of this client
         [NonSerialized] public Listener listener;
@@ -24,7 +24,7 @@ namespace Rcon
 
         public bool isBanned;
 
-        [NonSerialized] public ServerClient inVisitWith;
+        [NonSerialized] public RconClient inVisitWith;
 
         [NonSerialized] public bool inSafeZone;
 
@@ -36,7 +36,7 @@ namespace Rcon
 
         public string SavedIP { get; set; }
 
-        public ServerClient(TcpClient tcp)
+        public RconClient(TcpClient tcp)
         {
             if (tcp == null) return;
             else SavedIP = ((IPEndPoint)tcp.Client.RemoteEndPoint).Address.ToString();

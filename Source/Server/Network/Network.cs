@@ -11,13 +11,14 @@ namespace GameServer
         //IP and Port that the connection will be bound to
         private static IPAddress localAddress = IPAddress.Parse(Master.serverConfig.IP);
         private static int port = int.Parse(Master.serverConfig.Port);
-        private static int RconPort = int.Parse(Master.serverConfig.RconPort);
+        private static int rconPort = int.Parse(Master.serverConfig.RconPort);
+        private static bool AllowRconConnections = Master.serverConfig.allowRconConnections;
 
         //TCP listener that will handle the connection with the clients, and list of currently connected clients
         private static TcpListener connection;
-        private static TcpListener RconConnection;
+        private static TcpListener rconConnection;
         public static List<ServerClient> connectedClients = new List<ServerClient>();
-
+        public static List<RconClient> connectedRcons = new List<RconClient>();
         //Entry point function of the network class
 
         public static void ReadyServer()
@@ -32,6 +33,7 @@ namespace GameServer
             Logger.WriteToConsole("Server launched", Logger.LogMode.Warning);
             Master.ChangeTitle();
 
+
             while (true) ListenForIncomingUsers();
         }
 
@@ -40,8 +42,10 @@ namespace GameServer
         public static void ReadyRcon()
         {
 
-            RconConnection = new TcpListener(localAddress, port);
-            RconConnection.Start();
+            if (!AllowRconConnections) return;
+
+            rconConnection = new TcpListener(localAddress, rconPort);
+            rconConnection.Start();
 
 
             Logger.WriteToConsole("Ready for Remote Console Connections", Logger.LogMode.Warning);
@@ -97,14 +101,13 @@ namespace GameServer
 
 
             //Initialize everything needed when a user tries to connect
-            ServerClient newServerClient = new ServerClient(newTCP);
-            Listener newListener = new Listener(newServerClient, newTCP);
-            newServerClient.listener = newListener;
+            RconClient newRconClient = new RconClient(newTCP);
+            RconListener newListener = new RconListener(newRconClient, newTCP);
+            newRconClient.listener = newListener;
 
-            Threader.GenerateClientThread(newServerClient.listener, Threader.ClientMode.RconListener);
+            Task.Run(newRconClient.listener.Listen);
 
-            if (Master.isClosing) newServerClient.listener.disconnectFlag = true;
-            else if (Master.worldValues == null && connectedClients.Count() > 0) UserManager.SendLoginResponse(newServerClient, CommonEnumerators.LoginResponse.NoWorld);
+            if (Master.isClosing) newRconClient.listener.disconnectFlag = true;
             else
             {
                 if (connectedClients.ToArray().Count() >= int.Parse(Master.serverConfig.MaxRcons))
@@ -114,11 +117,11 @@ namespace GameServer
 
                 else
                 {
-                    connectedClients.Add(newServerClient);
+                    connectedRcons.Add(newRconClient);
 
                     Master.ChangeTitle();
 
-                    Logger.WriteToConsole($"[Connect] > {newServerClient.username} | {newServerClient.SavedIP}");
+                    Logger.WriteToConsole($"[Connect Rcon] > {newRconClient.username} | {newRconClient.SavedIP}");
                 }
             }
         }
@@ -144,6 +147,26 @@ namespace GameServer
             {
                 Logger.WriteToConsole($"Error disconnecting user {client.username}, this will cause memory overhead", Logger.LogMode.Warning);
             }
+        }
+
+        public static void KickRcon(RconClient rconClient)
+        {
+            try
+            {
+                connectedRcons.Remove(rconClient);
+                rconClient.listener.DestroyConnection();
+                
+                Master.ChangeTitle();
+
+                Logger.WriteToConsole($"[Disconnect Rcon] > {rconClient.username} | {rconClient.SavedIP}");
+            }
+
+            catch
+            {
+                Logger.WriteToConsole($"Error disconnecting user {rconClient.username}, this will cause memory overhead", Logger.LogMode.Warning);
+            }
+
+
         }
     }
 }

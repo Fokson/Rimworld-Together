@@ -11,9 +11,11 @@ namespace GameServer
         //IP and Port that the connection will be bound to
         private static IPAddress localAddress = IPAddress.Parse(Master.serverConfig.IP);
         private static int port = int.Parse(Master.serverConfig.Port);
+        private static int RconPort = int.Parse(Master.serverConfig.RconPort);
 
         //TCP listener that will handle the connection with the clients, and list of currently connected clients
         private static TcpListener connection;
+        private static TcpListener RconConnection;
         public static List<ServerClient> connectedClients = new List<ServerClient>();
 
         //Entry point function of the network class
@@ -31,6 +33,20 @@ namespace GameServer
             Master.ChangeTitle();
 
             while (true) ListenForIncomingUsers();
+        }
+
+        //Entry Point function for Rcon connections
+
+        public static void ReadyRcon()
+        {
+
+            RconConnection = new TcpListener(localAddress, port);
+            RconConnection.Start();
+
+
+            Logger.WriteToConsole("Ready for Remote Console Connections", Logger.LogMode.Warning);
+
+            while (true) ListenForIncomingRcons();
         }
 
         //Listens for any user that might connect and executes all required tasks  with it
@@ -71,6 +87,42 @@ namespace GameServer
                 }
             }
         }
+
+        //Listens for any Remote Consoles that might connect and executes all required tasks with it
+
+        private static void ListenForIncomingRcons()
+        {
+            //Wait for a user to try and connect
+            TcpClient newTCP = connection.AcceptTcpClient();
+
+
+            //Initialize everything needed when a user tries to connect
+            ServerClient newServerClient = new ServerClient(newTCP);
+            Listener newListener = new Listener(newServerClient, newTCP);
+            newServerClient.listener = newListener;
+
+            Threader.GenerateClientThread(newServerClient.listener, Threader.ClientMode.RconListener);
+
+            if (Master.isClosing) newServerClient.listener.disconnectFlag = true;
+            else if (Master.worldValues == null && connectedClients.Count() > 0) UserManager.SendLoginResponse(newServerClient, CommonEnumerators.LoginResponse.NoWorld);
+            else
+            {
+                if (connectedClients.ToArray().Count() >= int.Parse(Master.serverConfig.MaxRcons))
+                {
+                    Logger.WriteToConsole($"[Warning] > Server Full", Logger.LogMode.Warning);
+                }
+
+                else
+                {
+                    connectedClients.Add(newServerClient);
+
+                    Master.ChangeTitle();
+
+                    Logger.WriteToConsole($"[Connect] > {newServerClient.username} | {newServerClient.SavedIP}");
+                }
+            }
+        }
+
 
         //Kicks specified client from the server
 

@@ -1,92 +1,117 @@
-﻿using Shared;
-using System.Net;
-using System.Net.Sockets;
-
+﻿
 namespace Rcon
 {
-    //Main class that is used to handle the connection with the clients
+    //Main class that is used to handle the connection with the server
 
     public static class Network
     {
         //IP and Port that the connection will be bound to
-        private static IPAddress localAddress = IPAddress.Parse(Master.serverConfig.IP);
-        private static int port = int.Parse(Master.serverConfig.Port);
+        public static string ip = "";
+        public static string port = "";
 
-        //TCP listener that will handle the connection with the clients, and list of currently connected clients
-        private static TcpListener connection;
-        public static List<RconClient> connectedClients = new List<RconClient>();
+        //TCP listener that will handle the connection with the server
+        public static Listener listener;
+
+        //Useful booleans to check connection status with the server
+        public static bool isConnectedToServer;
+        public static bool isTryingToConnect;
 
         //Entry point function of the network class
-
-        public static void ReadyServer()
+        public static void StartConnection()
         {
-            connection = new TcpListener(localAddress, port);
-            connection.Start();
-
-            Threader.GenerateServerThread(Threader.ServerMode.Sites);
-
-            Logger.WriteToConsole("Type 'help' to get a list of available commands", Logger.LogMode.Warning);
-            Logger.WriteToConsole($"Listening for users at {localAddress}:{port}", Logger.LogMode.Warning);
-            Logger.WriteToConsole("Server launched", Logger.LogMode.Warning);
-            Master.ChangeTitle();
-
-            while (true) ListenForIncomingUsers();
-        }
-
-        //Listens for any user that might connect and executes all required tasks  with it
-
-        private static void ListenForIncomingUsers()
-        {
-            TcpClient newTCP = connection.AcceptTcpClient();
-            RconClient newServerClient = new RconClient(newTCP);
-            Listener newListener = new Listener(newServerClient, newTCP);
-            newServerClient.listener = newListener;
-
-            Threader.GenerateClientThread(newServerClient.listener, Threader.ClientMode.Listener);
-            Threader.GenerateClientThread(newServerClient.listener, Threader.ClientMode.Sender);
-            Threader.GenerateClientThread(newServerClient.listener, Threader.ClientMode.Health);
-            Threader.GenerateClientThread(newServerClient.listener, Threader.ClientMode.KAFlag);
-
-            if (Master.isClosing) newServerClient.listener.disconnectFlag = true;
-            else
+            while (true)
             {
-                if (connectedClients.ToArray().Count() >= int.Parse(Master.serverConfig.MaxPlayers))
-                {
-                    UserManager.SendLoginResponse(newServerClient, CommonEnumerators.LoginResponse.ServerFull);
-                    Logger.WriteToConsole($"[Warning] > Server Full", Logger.LogMode.Warning);
-                }
+                GetConnectionDetails();
 
+                if (TryConnectToServer())
+                {
+
+                    Threader.GenerateServerThread(Threader.RconMode.Console);
+
+                    Threader.GenerateClientThread(listener, Threader.ClientMode.Listener);
+                    Threader.GenerateClientThread(listener, Threader.ClientMode.Sender);
+                    Threader.GenerateClientThread(listener, Threader.ClientMode.Health);
+                    Threader.GenerateClientThread(listener, Threader.ClientMode.KAFlag);
+
+                    Logger.WriteToConsole($"[Rimworld Together Rcon] > Connected to server Console");
+                    break;
+                }
                 else
                 {
-                    connectedClients.Add(newServerClient);
-
-                    Master.ChangeTitle();
-
-                    Logger.WriteToConsole($"[Connect] > {newServerClient.username} | {newServerClient.SavedIP}");
+                    Logger.WriteToConsole($"[Rimworld Together Rcon] > Could not connect to the server");
+                    CleanValues();
                 }
             }
         }
 
-        //Kicks specified client from the server
-
-        public static void KickClient(RconClient client)
+        public static void GetConnectionDetails()
         {
-            try
-            {
-                connectedClients.Remove(client);
-                client.listener.DestroyConnection();
+            while (true) {
+                //get connection details
+                Logger.WriteToConsole("IP: ");
+                ip = Console.ReadLine();
+                Logger.WriteToConsole("Port: ");
+                port = Console.ReadLine();
 
-                UserManager.SendPlayerRecount();
 
-                Master.ChangeTitle();
+                //make sure the connection details are valid
+                bool isValid = true;
 
-                Logger.WriteToConsole($"[Disconnect] > {client.username} | {client.SavedIP}");
+
+
+                if (string.IsNullOrWhiteSpace(ip)) isValid = false;
+                if (string.IsNullOrWhiteSpace(port)) isValid = false;
+                if (port.Count() > 5) isValid = false;
+                if (!port.All(Char.IsDigit)) isValid = false;
+
+                if (isValid)
+                {
+                    Threader.GenerateServerThread(Threader.RconMode.Start);
+                    break;
+                }
+                else
+                {
+                    Logger.WriteToConsole($"[Rimworld Together Rcon] > Connection details are not valid, please try again");
+                }
             }
+        }
 
-            catch
+
+
+        //Tries to connect into the specified server
+        private static bool TryConnectToServer()
+        {
+            if (isTryingToConnect || isConnectedToServer) return false;
+            else
             {
-                Logger.WriteToConsole($"Error disconnecting user {client.username}, this will cause memory overhead", Logger.LogMode.Warning);
+                try
+                {
+                    isTryingToConnect = true;
+
+                    isConnectedToServer = true;
+
+                    listener = new Listener(new(ip, int.Parse(port)));
+
+                    return true;
+                }
+                catch { return false; }
             }
+        }
+
+        //Disconnects client from the server
+        public static void DisconnectFromServer()
+        {
+            listener.DestroyConnection();
+
+            Logger.WriteToConsole($"[Rimworld Together] > Connected to server Console");
+             
+        }
+
+        //Clears all related values
+        public static void CleanValues()
+        {
+            isTryingToConnect = false;
+            isConnectedToServer = false;
         }
     }
 }

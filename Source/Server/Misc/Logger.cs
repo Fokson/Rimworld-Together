@@ -18,15 +18,20 @@ namespace GameServer
 
         public static void WriteToConsole(string text, LogMode mode = LogMode.Normal, bool writeToLogs = true)
         {
+            string fullText;
             semaphore.WaitOne();
 
             if (writeToLogs) WriteToLogs(text);
 
             Console.ForegroundColor = colorDictionary[mode];
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] | " + text);
+            fullText = $"[{DateTime.Now:HH:mm:ss}] | " + text;
+            Console.WriteLine(fullText);
             Console.ForegroundColor = ConsoleColor.White;
 
             semaphore.Release();
+
+            RconManager.sendConsoleMirror(fullText, mode);
+
         }
 
         private static void WriteToLogs(string toLog)

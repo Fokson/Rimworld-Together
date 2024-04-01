@@ -9,4 +9,10 @@
 
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
 
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\Shared\Assemblies\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

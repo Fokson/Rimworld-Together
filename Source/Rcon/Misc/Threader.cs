@@ -2,13 +2,14 @@
 {
     public static class Threader
     {
-        public enum ServerMode { Start, Sites, Console }
+        public enum RconMode { Start, Console }
 
-        public static Task GenerateServerThread(ServerMode mode)
+        public static Task GenerateServerThread(RconMode mode)
         {
             return mode switch
             {
-                ServerMode.Start => Task.Run(Network.ReadyServer),
+                RconMode.Start => Task.Run(Network.StartConnection),
+                RconMode.Console => Task.Run(RconCommandManager.ListenForRconInput),
                 _ => throw new NotImplementedException(),
             };
         }

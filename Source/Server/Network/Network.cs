@@ -42,7 +42,7 @@ namespace GameServer
         public static void ReadyRcon()
         {
 
-            if (!AllowRconConnections) return;
+            //if (!AllowRconConnections) return;
 
             rconConnection = new TcpListener(localAddress, rconPort);
             rconConnection.Start();
@@ -97,8 +97,8 @@ namespace GameServer
         private static void ListenForIncomingRcons()
         {
             //Wait for a user to try and connect
-            TcpClient newTCP = connection.AcceptTcpClient();
-
+            TcpClient newTCP = rconConnection.AcceptTcpClient();
+            Logger.WriteToConsole("[Connect Rcon] > Unknown");
 
             //Initialize everything needed when a user tries to connect
             RconClient newRconClient = new RconClient(newTCP);

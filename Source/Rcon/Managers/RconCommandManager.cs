@@ -1,6 +1,8 @@
-﻿namespace Rcon
+﻿using Shared;
+
+namespace Rcon
 {
-    public static class ServerCommandManager
+    public static class RconCommandManager
     {
         public static string[] eventTypes = new string[]
         {
@@ -19,7 +21,7 @@
 
         public static void ParseServerCommands(string parsedString)
         {
-            string parsedPrefix = parsedString.Split(' ')[0].ToLower();
+            /*string parsedPrefix = parsedString.Split(' ')[0].ToLower();
             int parsedParameters = parsedString.Split(' ').Count() - 1;
             commandParameters = parsedString.Replace(parsedPrefix + " ", "").Split(" ");
 
@@ -39,15 +41,15 @@
                     {
                         if (commandToFetch.commandAction != null) commandToFetch.commandAction.Invoke();
 
-                        else Logger.WriteToConsole($"[ERROR] > Command '{commandToFetch.prefix}' didn't have any action built in", 
+                        else Logger.WriteToConsole($"[ERROR] > Command '{commandToFetch.prefix}' didn't have any action built in",
                             Logger.LogMode.Warning);
                     }
                 }
             }
-            catch (Exception e) { Logger.WriteToConsole($"[Error] > Couldn't parse command '{parsedPrefix}'. Reason: {e}", Logger.LogMode.Error); }
+            catch (Exception e) { Logger.WriteToConsole($"[Error] > Couldn't parse command '{parsedPrefix}'. Reason: {e}", Logger.LogMode.Error); }*/
         }
 
-        public static void ListenForServerCommands()
+        public static void ListenForRconInput()
         {
             bool interactiveConsole;
 
@@ -72,24 +74,14 @@
             }
             else Logger.WriteToConsole($"[Warning] > Couldn't found interactive console, disabling commands", Logger.LogMode.Warning);
         }
-    }
 
-    public static class ServerCommandStorage
-    {
-        private static ServerCommand clearCommand = new ServerCommand("clear", 0,
-            "Clears the console output",
-            ClearCommandAction);
-
-
-        public static ServerCommand[] serverCommands = new ServerCommand[]
+        public static void SendCommandToServer(string command)
         {
 
-        };
-        private static void ClearCommandAction()
-        {
-            Console.Clear();
+            ConsoleCommandDetails consoleCommandDetails = new ConsoleCommandDetails();
+            consoleCommandDetails.UnparsedCommand = command;
+            Packet.CreatePacketFromJSON(nameof(ConsoleCommandDetails), consoleCommandDetails);
 
-            Logger.WriteToConsole("[Cleared console]", Logger.LogMode.Title);
         }
     }
 }

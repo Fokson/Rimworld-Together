@@ -18,7 +18,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)JSON\Actions\VisitDetailsJSON.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JSON\ChatMessagesJSON.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JSON\CommandDetailsJSON.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)json\ConsoleCommandDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JSON\FileTransferJSON.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)json\ConsoleMirrorDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\CommonValues.cs" />
     <Compile Include="..\Shared\JSON\KeepAliveJSON.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JSON\MapFileJSON.cs" />

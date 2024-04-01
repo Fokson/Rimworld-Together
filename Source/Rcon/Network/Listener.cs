@@ -29,9 +29,8 @@ namespace Rcon
         //Reference to the ServerClient instance of this listener
         private RconClient targetClient;
 
-        public Listener(RconClient clientToUse, TcpClient connection) 
-        { 
-            targetClient = clientToUse;
+        public Listener(TcpClient connection)
+        {
 
             this.connection = connection;
             networkStream = connection.GetStream();
@@ -84,13 +83,13 @@ namespace Rcon
                     if (string.IsNullOrEmpty(data)) continue;
 
                     Packet receivedPacket = Serializer.SerializeStringToPacket(data);
-                    PacketHandler.HandlePacket(targetClient, receivedPacket);
+                    RconPacketHandler.HandlePacket(targetClient, receivedPacket);
                 }
             }
 
             catch (Exception e)
             {
-                if (Master.serverConfig.verboseLogs) Logger.WriteToConsole(e.ToString(), Logger.LogMode.Warning);
+                Logger.WriteToConsole(e.ToString(), Logger.LogMode.Warning);
 
                 disconnectFlag = true;
             }
@@ -113,7 +112,7 @@ namespace Rcon
 
             Thread.Sleep(1000);
 
-            Network.KickClient(targetClient);
+            DestroyConnection();
         }
 
         //Runs in a separate thread and checks if the connection is still alive

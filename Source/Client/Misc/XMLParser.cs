@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Xml;
+using Verse;
 using static Shared.CommonEnumerators;
 
 namespace GameClient
@@ -35,12 +36,43 @@ namespace GameClient
             }
 
             XmlNode worldObjectsNode = GetChildNodeInNode(worldNode, "worldObjects");
-            worldObjectsNode = GetChildNodeInNode(worldObjectsNode, "worldObjects");
 
             worldDetailsJSON.WorldObjects  = worldObjectsNode.InnerXml;
             return worldDetailsJSON;
         }
 
+        public static TileData parseGrid(WorldDetailsJSON worldDetailsJSON)
+        {
+            TileData tileData = new TileData();
+
+            tileData.tileBiome = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileBiomeDeflate"])));
+
+            tileData.tileElevation = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileElevationDeflate"])));
+
+            tileData.tileHilliness = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileHillinessDeflate"])));
+
+            tileData.tileTemperature = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileTemperatureDeflate"])));
+
+            tileData.tileRainfall = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileRainfallDeflate"])));
+
+            tileData.tileSwampiness = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileSwampinessDeflate"])));
+
+            tileData.tileFeature = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileFeatureDeflate"])));
+
+            tileData.tileRoadOrigins = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileRoadOriginsDeflate"])));
+
+            tileData.tileRoadAdjacency = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileRoadAdjacencyDeflate"])));
+
+            tileData.tileRoadDef = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileRoadDefDeflate"])));
+
+            tileData.tileRiverOrigins = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileRiverOriginsDeflate"])));
+
+            tileData.tileRiverAdjacency = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileRiverAdjacencyDeflate"])));
+
+            tileData.tileRiverDef = CompressUtility.Decompress(Convert.FromBase64String(DataExposeUtility.RemoveLineBreaks(worldDetailsJSON.deflateDictionary["tileRiverDefDeflate"])));
+
+            return tileData;
+        }
 
         //Modifies the existing XML file with the required details from the server
 
@@ -77,20 +109,25 @@ namespace GameClient
             // replace every world object with the server copy of the world object
             // this ensures the objects are in the correct location with the correct settings.
             // Objects that only exist on the player's world will not be changed
-            XmlNode playerWorldObjects = GetChildNodeInNode(worldNode, "worldObjects");
-            XmlNode ServerWorldObjects = new XmlDocument();
-            ServerWorldObjects.InnerXml = worldDetailsJSON.WorldObjects;
+
+            //grab player objects
+            XmlNode localWorldObjects = GetChildNodeInNode(worldNode, "worldObjects");
+            localWorldObjects = GetChildNodeInNode(localWorldObjects, "worldObjects");
+
+            //grab server o
+            XmlNode ServerWorldObjectsDoc = new XmlDocument();
+            ServerWorldObjectsDoc.InnerXml = worldDetailsJSON.WorldObjects;
+            XmlNode ServerWorldObjects = GetChildNodeInNode(ServerWorldObjectsDoc, "worldObjects");
+
+
             //foreach server object
             foreach (XmlNode ServerNode in ServerWorldObjects.ChildNodes)
             {
                 //find the player object with the same ID as the server Object
-                foreach (XmlNode playerNode in playerWorldObjects.ChildNodes)
+                foreach (XmlNode playerNode in localWorldObjects.ChildNodes)
                 {
-                    Logger.WriteToConsole($"IDs are {GetChildNodeInNode(playerNode, "ID")} : {GetChildNodeInNode(ServerNode, "ID")}",LogMode.Message);
-                    Logger.WriteToConsole($"Inner xml: {playerNode.InnerXml}", LogMode.Message);
-                    if (GetChildNodeInNode(playerNode, "ID") == GetChildNodeInNode(ServerNode, "ID"))
+                    if (GetChildNodeInNode(playerNode, "ID").InnerText == GetChildNodeInNode(ServerNode, "ID").InnerText)
                     {
-                        Logger.WriteToConsole($"Ids match : {GetChildNodeInNode(playerNode, "ID").InnerText}",LogMode.Message);
                         playerNode.InnerXml = ServerNode.InnerXml;
                         break;
                     }
@@ -98,8 +135,8 @@ namespace GameClient
 
 
             }
-            ServerWorldObjects.InnerXml = worldDetailsJSON.WorldObjects;
-            playerWorldObjects.InnerXml = worldDetailsJSON.WorldObjects;
+
+
             doc.Save(filePath);
         }
 

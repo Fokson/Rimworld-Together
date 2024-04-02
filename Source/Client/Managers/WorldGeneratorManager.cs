@@ -53,6 +53,8 @@ namespace GameClient
             population = (OverallPopulation)int.Parse(worldDetailsJSON.population);
             pollution = float.Parse(worldDetailsJSON.pollution);
 
+
+
             factions = new List<FactionDef>();
             FactionDef factionToAdd;
             Dictionary<string, FactionDetails> factionDictionary = new Dictionary<string, FactionDetails>();
@@ -63,28 +65,42 @@ namespace GameClient
                 factionDictionary[str] = (FactionDetails)Serializer.ConvertBytesToObject(worldDetailsJSON.factions[str]);
             }
 
+/*
             //for each faction in worldDetails, try to add it to the client's world
-
             FactionDetails factionDetails = new FactionDetails();
             foreach (string factionName in factionDictionary.Keys)
             {
                 factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(fetch => fetch.defName == factionName);
 
-                //try to find a faction with similar details
                 if (factionToAdd == null)
                 {
-                    factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(
-                        fetch => (fetch.permanentEnemy == factionDictionary[factionName].permanentEnemy) &&
-                                ((byte)fetch.techLevel == factionDictionary[factionName].techLevel) &&
-                                (fetch.hidden == factionDictionary[factionName].hidden));
+                    //try to find a faction that is currently in the world
+                    Faction factionFound = Current.Game.World.factionManager.AllFactions.FirstOrDefault(
+                                    fetch => (fetch.def.permanentEnemy == factionDictionary[factionName].permanentEnemy) &&
+                                    (fetch.def.naturalEnemy == factionDictionary[factionName].naturalEnemy) &&
+                                    ((byte)fetch.def.techLevel == factionDictionary[factionName].techLevel) &&
+                                    (fetch.def.hidden == factionDictionary[factionName].hidden));
 
-                    //if a faction cannot be found with similar details, then make a new faction
+                    if (factionFound != null)
+                        factionToAdd = factionFound.def;
+
+                    //try to find a faction with similar details
                     if (factionToAdd == null)
                     {
-                        factionToAdd = FactionScribeManager.factionDetailsToFaction(factionDictionary[factionName]);
+                        factionToAdd = DefDatabase<FactionDef>.AllDefs.FirstOrDefault(
+                            fetch => (fetch.permanentEnemy == factionDictionary[factionName].permanentEnemy) &&
+                                    (fetch.naturalEnemy == factionDictionary[factionName].naturalEnemy) &&
+                                    ((byte)fetch.techLevel == factionDictionary[factionName].techLevel) &&
+                                    (fetch.hidden == factionDictionary[factionName].hidden));
+
+                        //if a faction cannot be found with similar details, then make a new faction
+                        if (factionToAdd == null)
+                        {
+                            factionToAdd = FactionScribeManager.factionDetailsToFaction(factionDictionary[factionName]);
+                        }
+
+
                     }
-
-
                 }
                 factionToAdd.fixedName = factionDictionary[factionName].fixedName;
                 factions.Add(factionToAdd);
@@ -92,14 +108,7 @@ namespace GameClient
                 cacheDetailsFactionDict[factionName] = Serializer.ConvertObjectToBytes(factionDetails);
             }
 
-           
-
-            //Convert the string-string dictionary into a string-FactionDetails dictionary
-            foreach (string str in worldDetailsJSON.factions.Keys)
-            {
-            }
-
-            worldDetailsJSON.factions = cacheDetailsFactionDict;
+            worldDetailsJSON.factions = cacheDetailsFactionDict;*/
             cachedWorldDetails = worldDetailsJSON;
         }
 
@@ -146,17 +155,131 @@ namespace GameClient
             foreach (WorldGenStepDef step in GenStepsInOrder){
                 Logger.WriteToConsole($"step : {step.ToString()}",LogMode.Message);
             }
+
+
             for (int i = 0; i < worldGenSteps.Count(); i++)
             {
                 worldGenSteps[i].worldGenStep.GenerateFresh(seedString);
             }
 
-            Current.CreatingWorld.grid.StandardizeTileData();
+            if (!ClientValues.needsToGenerateWorld)
+            {
+                TileData tileData = XmlParser.parseGrid(cachedWorldDetails);
+                RawDataToTiles(Current.CreatingWorld.grid, tileData);
+            }
+
+            //Current.CreatingWorld.grid.StandardizeTileData();
+
             Current.CreatingWorld.FinalizeInit();
             Find.Scenario.PostWorldGenerate();
 
             if (!ModsConfig.IdeologyActive) Find.Scenario.PostIdeoChosen();
             return Current.CreatingWorld;
+        }
+
+        public static void RawDataToTiles(WorldGrid grid, TileData tileData)
+        {
+            if (grid.tiles.Count != grid.TilesCount)
+            {
+                grid.tiles.Clear();
+                for (int m = 0; m < grid.TilesCount; m++)
+                {
+                    grid.tiles.Add(new Tile());
+                }
+            }
+            else
+            {
+                for (int j = 0; j < grid.TilesCount; j++)
+                {
+                    grid.tiles[j].potentialRoads = null;
+                    grid.tiles[j].potentialRivers = null;
+                }
+            }
+            Logger.WriteToConsole($"tileBiomeLength : {tileData.tileBiome.Length} tile count : {grid.TilesCount}",LogMode.Message);
+            DataSerializeUtility.LoadUshort(tileData.tileBiome, grid.TilesCount, delegate (int i, ushort data)
+            {
+                grid.tiles[i].biome = (DefDatabase<BiomeDef>.GetByShortHash(data) ?? BiomeDefOf.TemperateForest);
+            });
+            DataSerializeUtility.LoadUshort(tileData.tileElevation, grid.TilesCount, delegate (int i, ushort data)
+            {
+                grid.tiles[i].elevation = (float)(data - 8192);
+            });
+            DataSerializeUtility.LoadByte(tileData.tileHilliness, grid.TilesCount, delegate (int i, byte data)
+            {
+                grid.tiles[i].hilliness = (Hilliness)data;
+            });
+            DataSerializeUtility.LoadUshort(tileData.tileTemperature, grid.TilesCount, delegate (int i, ushort data)
+            {
+                grid.tiles[i].temperature = (float)data / 10f - 300f;
+            });
+            DataSerializeUtility.LoadUshort(tileData.tileRainfall, grid.TilesCount, delegate (int i, ushort data)
+            {
+                grid.tiles[i].rainfall = (float)data;
+            });
+            DataSerializeUtility.LoadByte(tileData.tileSwampiness, grid.TilesCount, delegate (int i, byte data)
+            {
+                grid.tiles[i].swampiness = (float)data / 255f;
+            });
+            int[] array = DataSerializeUtility.DeserializeInt(tileData.tileRoadOrigins);
+            byte[] array2 = DataSerializeUtility.DeserializeByte(tileData.tileRoadAdjacency);
+            ushort[] array3 = DataSerializeUtility.DeserializeUshort(tileData.tileRoadDef);
+            for (int k = 0; k < array.Length; k++)
+            {
+                int num = array[k];
+                int tileNeighbor = grid.GetTileNeighbor(num, (int)array2[k]);
+                RoadDef byShortHash = DefDatabase<RoadDef>.GetByShortHash(array3[k]);
+                if (byShortHash != null)
+                {
+                    if (grid.tiles[num].potentialRoads == null)
+                    {
+                        grid.tiles[num].potentialRoads = new List<Tile.RoadLink>();
+                    }
+                    if (grid.tiles[tileNeighbor].potentialRoads == null)
+                    {
+                        grid.tiles[tileNeighbor].potentialRoads = new List<Tile.RoadLink>();
+                    }
+                    grid.tiles[num].potentialRoads.Add(new Tile.RoadLink
+                    {
+                        neighbor = tileNeighbor,
+                        road = byShortHash
+                    });
+                    grid.tiles[tileNeighbor].potentialRoads.Add(new Tile.RoadLink
+                    {
+                        neighbor = num,
+                        road = byShortHash
+                    });
+                }
+            }
+            int[] array4 = DataSerializeUtility.DeserializeInt(tileData.tileRiverOrigins);
+            byte[] array5 = DataSerializeUtility.DeserializeByte(tileData.tileRiverAdjacency);
+            ushort[] array6 = DataSerializeUtility.DeserializeUshort(tileData.tileRiverDef);
+            for (int l = 0; l < array4.Length; l++)
+            {
+                int num2 = array4[l];
+                int tileNeighbor2 = grid.GetTileNeighbor(num2, (int)array5[l]);
+                RiverDef byShortHash2 = DefDatabase<RiverDef>.GetByShortHash(array6[l]);
+                if (byShortHash2 != null)
+                {
+                    if (grid.tiles[num2].potentialRivers == null)
+                    {
+                        grid.tiles[num2].potentialRivers = new List<Tile.RiverLink>();
+                    }
+                    if (grid.tiles[tileNeighbor2].potentialRivers == null)
+                    {
+                        grid.tiles[tileNeighbor2].potentialRivers = new List<Tile.RiverLink>();
+                    }
+                    grid.tiles[num2].potentialRivers.Add(new Tile.RiverLink
+                    {
+                        neighbor = tileNeighbor2,
+                        river = byShortHash2
+                    });
+                    grid.tiles[tileNeighbor2].potentialRivers.Add(new Tile.RiverLink
+                    {
+                        neighbor = num2,
+                        river = byShortHash2
+                    });
+                }
+            }
         }
 
         public static void SendWorldToServer()
@@ -218,5 +341,34 @@ namespace GameClient
             Find.WindowStack.Add(newSelectStartingSite);
             DialogShortcuts.ShowWorldGenerationDialogs();
         }
+    }
+
+    public struct TileData
+    {
+        public byte[] tileBiome;
+
+        public byte[] tileElevation;
+
+        public byte[] tileHilliness;
+
+        public byte[] tileTemperature;
+
+        public byte[] tileRainfall;
+
+        public byte[] tileSwampiness;
+
+        public byte[] tileFeature;
+
+        public byte[] tileRoadOrigins;
+
+        public byte[] tileRoadAdjacency;
+
+        public byte[] tileRoadDef;
+
+        public byte[] tileRiverOrigins;
+
+        public byte[] tileRiverAdjacency;
+
+        public byte[] tileRiverDef;
     }
 }

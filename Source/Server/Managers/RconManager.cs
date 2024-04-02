@@ -19,7 +19,14 @@ namespace GameServer
             consoleMirrorDetails.ConsoleColor = (int)color;
             consoleMirrorDetails.ConsoleText = text;
 
+            byte[] contents = Serializer.ConvertObjectToBytes(consoleMirrorDetails);
 
+            Packet packet = Packet.CreatePacketFromJSON(nameof(consoleMirrorDetails),contents);
+
+            foreach (RconClient rconClient in Network.connectedRcons)
+            {
+                rconClient.listener.dataQueue.Enqueue(packet);
+            }
 
         }
 

@@ -98,7 +98,6 @@ namespace GameServer
         {
             //Wait for a user to try and connect
             TcpClient newTCP = rconConnection.AcceptTcpClient();
-            Logger.WriteToConsole("[Connect Rcon] > Unknown");
 
             //Initialize everything needed when a user tries to connect
             RconClient newRconClient = new RconClient(newTCP);
@@ -106,6 +105,13 @@ namespace GameServer
             newRconClient.listener = newListener;
 
             Task.Run(newRconClient.listener.Listen);
+
+
+            Threader.GenerateRconThread(newRconClient.listener, Threader.ClientMode.Listener);
+            Threader.GenerateRconThread(newRconClient.listener, Threader.ClientMode.Sender);
+            Threader.GenerateRconThread(newRconClient.listener, Threader.ClientMode.Health);
+            Threader.GenerateRconThread(newRconClient.listener, Threader.ClientMode.KAFlag);
+
 
             if (Master.isClosing) newRconClient.listener.disconnectFlag = true;
             else

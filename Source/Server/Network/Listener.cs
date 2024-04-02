@@ -96,32 +96,7 @@ namespace GameServer
             }
         }
 
-        public void RconListen()
-        {
-            try
-            {
-                while (true)
-                {
-                    Thread.Sleep(1);
-
-                    string data = streamReader.ReadLine();
-                    if (string.IsNullOrEmpty(data)) continue;
-
-                    Packet receivedPacket = Serializer.SerializeStringToPacket(data);
-                    PacketHandler.HandlePacket(targetClient, receivedPacket);
-                }
-            }
-
-            catch (Exception e)
-            {
-                if (Master.serverConfig.verboseLogs) Logger.WriteToConsole(e.ToString(), Logger.LogMode.Warning);
-
-                disconnectFlag = true;
-            }
-        }
-
         //Runs in a separate thread and checks if the connection should still be up
-
         public void CheckConnectionHealth()
         {
             try

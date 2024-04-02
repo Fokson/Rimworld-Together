@@ -29,5 +29,19 @@
                 _ => throw new NotImplementedException(),
             };
         }
+
+        public enum RconMode { Listener, Sender, Health, KAFlag}
+
+        public static Task GenerateRconThread(RconListener listener, ClientMode mode)
+        {
+            return mode switch
+            {
+                ClientMode.Listener => Task.Run(listener.Listen),
+                ClientMode.Sender => Task.Run(listener.SendData),
+                ClientMode.Health => Task.Run(listener.CheckConnectionHealth),
+                ClientMode.KAFlag => Task.Run(listener.CheckKAFlag),
+                _ => throw new NotImplementedException(),
+            };
+        }
     }
 }

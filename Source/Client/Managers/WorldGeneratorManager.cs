@@ -132,7 +132,9 @@ namespace GameClient
 
         private static World GenerateWorld()
         {
-            Rand.PushState(0);
+            Rand.PushState();
+            int seed = (Rand.Seed = GenText.StableStringHash(seedString));
+
             Current.CreatingWorld = new World();
             Logger.WriteToConsole($"Generating a world using the seed : {seedString}",LogMode.Message);
             Current.CreatingWorld.info.seedString = seedString;
@@ -149,7 +151,7 @@ namespace GameClient
             //worldGenSteps[0].worldGenStep = new RT_WorldGenStep_Terrain();
 
             WorldGenerationData.initializeGenerationDefs();
-            WorldGenStepDef[] worldGenSteps = WorldGenerationData.WorldSyncSteps;
+            List<WorldGenStepDef> worldGenSteps = WorldGenerationData.WorldSyncSteps.ToList();
             Logger.WriteToConsole($"Steps count : {GenStepsInOrder.Count()}",LogMode.Message);
 
             foreach (WorldGenStepDef step in GenStepsInOrder){
@@ -159,6 +161,7 @@ namespace GameClient
 
             for (int i = 0; i < worldGenSteps.Count(); i++)
             {
+                Rand.Seed = Gen.HashCombineInt(seed, GetSeedPart(worldGenSteps, i));
                 worldGenSteps[i].worldGenStep.GenerateFresh(seedString);
             }
 
@@ -175,6 +178,20 @@ namespace GameClient
 
             if (!ModsConfig.IdeologyActive) Find.Scenario.PostIdeoChosen();
             return Current.CreatingWorld;
+        }
+
+        private static int GetSeedPart(List<WorldGenStepDef> genSteps, int index)
+        {
+            int seedPart = genSteps[index].worldGenStep.SeedPart;
+            int num = 0;
+            for (int i = 0; i < index; i++)
+            {
+                if (genSteps[i].worldGenStep.SeedPart == seedPart)
+                {
+                    num++;
+                }
+            }
+            return seedPart + num;
         }
 
         public static void RawDataToTiles(WorldGrid grid, TileData tileData)

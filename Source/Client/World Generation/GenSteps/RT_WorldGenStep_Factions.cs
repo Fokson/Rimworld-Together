@@ -16,13 +16,6 @@ namespace RimWorld.Planet
 
 		public override void GenerateFresh(string seed)
 		{
-            foreach (FactionDef item in DefDatabase<FactionDef>.AllDefs.OrderBy((FactionDef x) => x.hidden))
-            {
-				for (int i = 0; i < item.requiredCountAtGameStart; i++)
-				{
-					Current.CreatingWorld.info.factions.Add(item);
-				}
-            }
             FactionGenerator.GenerateFactionsIntoWorld(Current.CreatingWorld.info.factions);
 		}
 

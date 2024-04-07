@@ -19,6 +19,7 @@ namespace GameClient
         public static OverallTemperature temperature;
         public static OverallPopulation population;
         public static float pollution;
+        public static List<FactionDef> initialFactions = new List<FactionDef>();
         public static List<FactionDef> factions = new List<FactionDef>();
         public static WorldDetailsJSON cachedWorldDetails;
 
@@ -112,6 +113,30 @@ namespace GameClient
             cachedWorldDetails = worldDetailsJSON;
         }
 
+        private static void ResetFactionCounts()
+        {
+            factions = new List<FactionDef>();
+            foreach (FactionDef configurableFaction in FactionGenerator.ConfigurableFactions)
+            {
+                if (configurableFaction.startingCountAtWorldCreation > 0)
+                {
+                    for (int i = 0; i < configurableFaction.startingCountAtWorldCreation; i++)
+                    {
+                        factions.Add(configurableFaction);
+                    }
+                }
+            }
+            foreach (FactionDef faction in FactionGenerator.ConfigurableFactions)
+            {
+                if (faction.replacesFaction != null)
+                {
+                    factions.RemoveAll((FactionDef x) => x == faction.replacesFaction);
+                }
+            }
+            initialFactions = new List<FactionDef>();
+            initialFactions.AddRange(factions);
+        }
+
         public static void GeneratePatchedWorld(bool firstGeneration)
         {
             DialogManager.clearStack();
@@ -145,6 +170,7 @@ namespace GameClient
             Current.CreatingWorld.info.overallPopulation = population;
             Current.CreatingWorld.info.name = NameGenerator.GenerateName(RulePackDefOf.NamerWorld);
             Current.CreatingWorld.info.factions = factions;
+            Current.CreatingWorld.info.factions.AddRange(initialFactions);
             Current.CreatingWorld.info.pollution = pollution;
 
             //WorldGenStepDef[] worldGenSteps = GenStepsInOrder.ToArray();
@@ -158,12 +184,12 @@ namespace GameClient
                 Logger.WriteToConsole($"step : {step.ToString()}",LogMode.Message);
             }
 
-
             for (int i = 0; i < worldGenSteps.Count(); i++)
             {
                 Rand.Seed = Gen.HashCombineInt(seed, GetSeedPart(worldGenSteps, i));
                 worldGenSteps[i].worldGenStep.GenerateFresh(seedString);
             }
+
 
             if (!ClientValues.needsToGenerateWorld)
             {

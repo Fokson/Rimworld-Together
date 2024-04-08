@@ -5,7 +5,7 @@ namespace GameClient
 {
     public static class Threader
     {
-        public enum Mode { Listener, Sender, Health, KASender, Visit, LongEvent }
+        public enum Mode { Listener, Sender, Health, KASender, Visit }
 
         public static Task GenerateThread(Mode mode)
         {

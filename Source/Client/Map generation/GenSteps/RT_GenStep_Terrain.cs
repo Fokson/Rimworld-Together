@@ -41,15 +41,18 @@ namespace GameClient
                     IntVec3 vectorToCheck = new IntVec3(x, map.Size.y, z);
 
                     Building edifice = vectorToCheck.GetEdifice(map);
-
                     
+
                     try
                     {
                         TerrainDef terrainToUse = DefDatabase<TerrainDef>.AllDefs.ToList().Find(fetch => fetch.defName ==
                             mapDetailsJSON.tileDefNames[index]);
 
-                        //Sometimes SetTerrain needs to use the passability variable in a TerrainDef, but Cant because no terrain exists at the index
-                        //Here we are creating a TerrainDef with a passability to avoid an exception
+
+                        //  Sometimes SetTerrain needs to use the passability variable in a TerrainDef, but cant 
+                        //  because no terrain exists at the index (a null reference gets thrown)
+                        //  Here we are creating a TerrainDef and setting passability to avoid an exception
+                        //  no idea why the terrain is null at all.
                         int ind = map.cellIndices.CellToIndex(vectorToCheck);
                         if (map.terrainGrid.TerrainAt(ind) == null)
                         {
